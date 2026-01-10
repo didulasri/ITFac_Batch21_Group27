@@ -1,8 +1,8 @@
 module.exports = {
   default: {
-    require: ["steps/**/*.ts", "utils/hooks.ts"],
+    require: ["src/test/steps/**/*.ts", "src/test/utils/hooks.ts"],
     format: ["progress", "allure-cucumberjs"],
-    paths: ["features/**/*.feature"],
+    paths: ["src/test/features/**/*.feature"],
     publishQuiet: true,
   },
 };
