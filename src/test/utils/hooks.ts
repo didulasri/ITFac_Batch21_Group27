@@ -9,9 +9,9 @@ import { chromium, Browser, BrowserContext, Page } from "@playwright/test";
 setDefaultTimeout(60000);
 
 class CustomWorld {
-  browser!: Browser;
-  context!: BrowserContext;
-  page!: Page;
+  browser?: Browser;
+  context?: BrowserContext;
+  page?: Page;
 }
 
 setWorldConstructor(CustomWorld);
@@ -29,21 +29,27 @@ Before(async function () {
 
   this.page.setDefaultTimeout(30000);
 
+  console.log("→ Navigating to login page...");
+  await this.page.goto("http://localhost:8080/ui/login", {
+    waitUntil: "domcontentloaded",
+  });
+
   console.log("=== Browser ready ===");
 });
 
 After(async function (scenario) {
-  console.log(
-    `=== Test ${scenario.pickle.name}: ${scenario.result?.status} ===`,
-  );
+  const status = scenario.result?.status;
+  console.log(`=== Test ${scenario.pickle.name}: ${status} ===`);
 
-  if (scenario.result?.status === "FAILED") {
+  // ✅ only wait if page still exists
+  if (status === "FAILED" && this.page && !this.page.isClosed()) {
     await this.page.waitForTimeout(2000);
   }
 
-  await this.page.close();
-  await this.context.close();
-  await this.browser.close();
+  // ✅ close safely
+  if (this.page && !this.page.isClosed()) await this.page.close();
+  if (this.context) await this.context.close();
+  if (this.browser) await this.browser.close();
 
   console.log("=== Browser closed ===");
 });

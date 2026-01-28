@@ -5,12 +5,13 @@ import { PlantPage } from "../pages/PlantPage";
 Given("the user is logged in as Admin", async function () {
   await this.page.goto("http://localhost:8080/ui/login");
 
-  await this.page.waitForSelector("#username");
+  await this.page.waitForSelector('input[name="username"]', {
+    state: "visible",
+  });
+  await this.page.fill('input[name="username"]', "admin");
 
-  await this.page.fill("#username", "admin");
-  await this.page.fill("#password", "admin123");
-
-  await this.page.click("button[type='submit']");
+  await this.page.fill('input[name="password"]', "admin123");
+  await this.page.click('button[type="submit"]');
 
   // 🔥 VERY IMPORTANT
   await this.page.waitForSelector("text=Plants");
@@ -21,39 +22,17 @@ Given("the user is logged in as Admin", async function () {
 Given("the user is logged in as User", async function () {
   await this.page.goto("http://localhost:8080/ui/login");
 
-  await this.page.waitForSelector("#username");
+  await this.page.waitForSelector('input[name="username"]', {
+    state: "visible",
+  });
+  await this.page.fill('input[name="username"]', "testuser");
 
-  await this.page.fill("#username", "testuser");
-  await this.page.fill("#password", "test123");
-
-  await this.page.click("button[type='submit']");
+  await this.page.fill('input[name="password"]', "test123");
+  await this.page.click('button[type="submit"]');
 
   await this.page.waitForSelector("text=Plants");
 
   console.log("✓ User login complete");
-});
-
-Given("user logs in as Admin", { timeout: 60000 }, async function () {
-  console.log("→ Navigating to login page...");
-  await this.page.goto("http://localhost:8080/ui/login", {
-    waitUntil: "domcontentloaded",
-    timeout: 30000,
-  });
-
-  console.log("→ Waiting for login form...");
-  await this.page.waitForSelector("#username", { timeout: 10000 });
-
-  console.log("→ Filling admin credentials...");
-  await this.page.fill("#username", "admin");
-  await this.page.fill("#password", "admin123");
-
-  console.log("→ Clicking submit button...");
-  await this.page.click("button[type='submit']");
-
-  console.log("→ Waiting for navigation after login...");
-  await this.page.waitForLoadState("networkidle", { timeout: 10000 });
-
-  console.log("✓ Admin login complete");
 });
 
 /* ================= OPEN PAGE ================= */
