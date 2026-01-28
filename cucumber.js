@@ -1,8 +1,14 @@
 module.exports = {
   default: {
     require: ["src/test/steps/**/*.ts", "src/test/utils/hooks.ts"],
-    format: ["progress", "allure-cucumberjs"],
+    requireModule: ["ts-node/register"],
+    format: [
+      "progress",
+      // Correct allure formatter configuration
+      // ["allure-cucumberjs", "./allure-results"],
+    ],
     paths: ["src/test/features/**/*.feature"],
     publishQuiet: true,
+    timeout: 60000,
   },
 };
