@@ -28,10 +28,10 @@ const { chromium } = require("@playwright/test");
     console.log("Step 5: Checking current URL...");
     console.log("Current URL:", page.url());
 
-    console.log("\n✅ Login successful! Browser will close in 5 seconds...");
+    console.log("\n Login successful! Browser will close in 5 seconds...");
     await page.waitForTimeout(5000);
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error("Error:", error.message);
     console.log("Browser will stay open for 10 seconds...");
     await page.waitForTimeout(10000);
   }
