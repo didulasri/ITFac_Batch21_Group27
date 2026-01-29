@@ -5,7 +5,7 @@ const config: PlaywrightTestConfig = {
   use: {
     headless: false,
     viewport: { width: 1280, height: 720 },
-    baseURL: "http://localhost:8080",
+    baseURL: "http://localhost:8080/ui/login",
     ignoreHTTPSErrors: true,
   },
   reporter: [["list"], ["allure-playwright"]],
