@@ -41,12 +41,11 @@ After(async function (scenario) {
   const status = scenario.result?.status;
   console.log(`=== Test ${scenario.pickle.name}: ${status} ===`);
 
-  // ✅ only wait if page still exists
   if (status === "FAILED" && this.page && !this.page.isClosed()) {
     await this.page.waitForTimeout(2000);
   }
 
-  // ✅ close safely
+
   if (this.page && !this.page.isClosed()) await this.page.close();
   if (this.context) await this.context.close();
   if (this.browser) await this.browser.close();

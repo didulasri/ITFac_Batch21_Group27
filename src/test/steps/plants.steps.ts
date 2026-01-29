@@ -13,7 +13,6 @@ Given("the user is logged in as Admin", async function () {
   await this.page.fill('input[name="password"]', "admin123");
   await this.page.click('button[type="submit"]');
 
-  // 🔥 VERY IMPORTANT
   await this.page.waitForSelector("text=Plants");
 
   console.log("✓ Admin login complete");

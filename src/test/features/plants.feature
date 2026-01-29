@@ -9,11 +9,13 @@ Scenario: Admin views plant listing
 
 Scenario: Admin searches plants by name
     Given the user is logged in as Admin
+    When the admin opens the plants page
     When the admin searches for plant "Rose"
     Then only plants matching "Rose" should be displayed
 
 Scenario: Admin filters plants by category
     Given the user is logged in as Admin
+    When the admin opens the plants page
     When the admin filters plants by category "Indoor"
     Then only plants under category "Indoor" should be displayed
 
@@ -23,8 +25,8 @@ Scenario: Admin filters plants by category
     Then low stock plants should be clearly indicated
 
 Scenario: Admin can see action buttons on plant list
-    Given user logs in as Admin
-    When admin opens plants page
+    Given the user is logged in as Admin
+    When the admin opens the plants page
     Then admin action buttons should be visible
 
 
@@ -37,13 +39,15 @@ Scenario: User views plant listing
 
 Scenario: User searches plants by name
     Given the user is logged in as User
-    When the user searches for plant "Lily"
-    Then only plants matching "Lily" should be displayed
+    When the user opens the plants page
+    When the user searches for plant "Orchid"
+    Then only plants matching "Orchid" should be displayed
 
 Scenario: User filters plants by category
     Given the user is logged in as User
-    When the user filters plants by category "Outdoor"
-    Then only plants under category "Outdoor" should be displayed
+    When the user opens the plants page
+    When the user filters plants by category "Roses"
+    Then only plants under category "Roses" should be displayed
 
 Scenario: User views low stock indicator
     Given the user is logged in as User

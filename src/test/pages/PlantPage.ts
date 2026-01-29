@@ -17,30 +17,29 @@ export class PlantPage {
     this.page = page;
 
     // ---- BASIC LISTING ----
-    this.plantRows = page.locator(".plant-row");
-    // (use a real class / data-testid from your UI)
+    this.plantRows = page.locator("tbody tr");
 
     // ---- SEARCH ----
-    this.searchInput = page.locator("input[placeholder='Search plants']");
+    this.searchInput = page.locator("input[name='name']");
 
     // ---- FILTER ----
-    this.categoryDropdown = page.locator("select[name='category']");
+    this.categoryDropdown = page.locator("select[name='categoryId']");
 
     // ---- SORT ----
     this.sortByNameButton = page.locator("button:has-text('Sort by Name')");
 
     // ---- LOW STOCK ----
-    this.lowStockBadge = page.locator(".low-stock");
+    this.lowStockBadge = page.locator(".badge.bg-danger");
 
     // ---- ADMIN CONTROLS ----
-    this.adminEditButton = page.locator("button:has-text('Edit')");
-    this.adminDeleteButton = page.locator("button:has-text('Delete')");
+    this.adminEditButton = page.locator("a[title='Edit']");
+    this.adminDeleteButton = page.locator("button[title='Delete']");
   }
 
   // ================= ACTIONS =================
 
   async openPlantListing() {
-    await this.page.click("text=Plants");
+    await this.page.click(".sidebar a:has-text('Plants')");
   }
 
   async searchPlant(name: string) {
@@ -50,6 +49,7 @@ export class PlantPage {
 
   async filterByCategory(category: string) {
     await this.categoryDropdown.selectOption({ label: category });
+    await this.page.click("button:has-text('Search')");
   }
 
   async sortByName() {
