@@ -30,7 +30,7 @@ Given("user is authenticated with a valid token", async function () {
 /* ==================== PRECONDITIONS ==================== */
 
 Given("at least one plant record exists", function () {
-    // This is a precondition check - assume data is already set up
+
     console.log("✓ Precondition: Plant records exist");
 });
 
@@ -143,7 +143,7 @@ Then("low stock plants should be displayed", function () {
 Then("plant list should be sorted by name in ascending order", function () {
     console.log("→ Verifying sorting and pagination");
 
-    // Check if response has content array (paginated response)
+
     const plants = this.responseBody.content || this.responseBody;
     expect(Array.isArray(plants)).toBeTruthy();
 
