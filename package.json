@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js test"
+    "test": "cucumber-js test",
+    "test:categories": "cucumber-js --profile categories"
   },
   "keywords": [],
   "author": "",
