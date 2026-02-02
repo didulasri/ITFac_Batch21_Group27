@@ -11,4 +11,12 @@ module.exports = {
     publishQuiet: true,
     timeout: 60000,
   },
+  categories: {
+    require: ["src/test/utils/hooks.ts", "src/test/steps/categories_cm1.steps.ts"],
+    requireModule: ["ts-node/register"],
+    format: ["progress"],
+    paths: ["src/test/features/categories_cm1.feature"],
+    publishQuiet: true,
+    timeout: 60000,
+  },
 };
