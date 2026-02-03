@@ -45,7 +45,6 @@ After(async function (scenario) {
     await this.page.waitForTimeout(2000);
   }
 
-
   if (this.page && !this.page.isClosed()) await this.page.close();
   if (this.context) await this.context.close();
   if (this.browser) await this.browser.close();
