@@ -4,10 +4,8 @@ module.exports = {
     requireModule: ["ts-node/register"],
     format: [
       "progress",
-      // Correct allure formatter configuration
-      // ["allure-cucumberjs", "./allure-results"],
+      // ["allure-cucumberjs", "./allure-results"]
     ],
-    paths: ["src/test/features/**/*.feature"],
     publishQuiet: true,
     timeout: 60000,
   },
