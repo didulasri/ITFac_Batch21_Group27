@@ -31,8 +31,6 @@ module.exports = {
     publishQuiet: true,
     timeout: 60000,
   },
-};
-
   categories_cm2: {
     require: [
       "src/test/utils/hooks.ts",
@@ -56,4 +54,6 @@ module.exports = {
     timeout: 60000,
   },
 };
+
+
 
