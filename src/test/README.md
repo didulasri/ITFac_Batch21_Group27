@@ -168,6 +168,42 @@ Tests are organized using Cucumber tags:
 | SM-UI-009 | Default Sorting               | ✅ Passing |
 | SM-UI-010 | Direct Access Blocked         | ✅ Passing |
 
+### Sales Management API Tests (10 scenarios)
+
+| ID         | Scenario                        | Method | Status     | Note                           |
+| ---------- | ------------------------------- | ------ | ---------- | ------------------------------ |
+| SM-API-001 | Admin create sale               | POST   | ✅ Passing |                                |
+| SM-API-002 | Admin delete sale               | DELETE | ✅ Passing |                                |
+| SM-API-003 | Validation (Insufficient Stock) | POST   | ✅ Passing | Returns 400 Bad Request        |
+| SM-API-004 | Validation (Invalid Quantity)   | POST   | ✅ Passing | Returns 400 Bad Request        |
+| SM-API-005 | Admin get all sales             | GET    | ✅ Passing |                                |
+| SM-API-006 | User get all sales              | GET    | ✅ Passing |                                |
+| SM-API-007 | User get sale by ID             | GET    | ✅ Passing |                                |
+| SM-API-008 | User create forbidden           | POST   | ❌ Failing | **Bug:** Bypass (Expected 403) |
+| SM-API-009 | User delete forbidden           | DELETE | ❌ Failing | **Bug:** Bypass (Expected 403) |
+| SM-API-010 | Pagination check                | GET    | ✅ Passing | Verified Spring Page structure |
+
+## Running API Tests
+
+The API tests can be executed individually or as a suite using dedicated Cucumber profiles:
+
+```bash
+# Run all Sales API scenarios using the profile
+npx cucumber-js --profile sales-api
+
+# Run using tags
+npx cucumber-js --tags @sales-api
+
+# Run a specific API test case
+npx cucumber-js --tags @SM-API-001
+```
+
+### API Test Data Setup
+
+API tests implement **Robust Data Seeding**. They automatically initialize the required hierarchy:
+`Main Category -> Sub-Category -> Plant`
+This ensures tests are isolated and independent of the current database state. Preconditions are handled using administrative privileges (token swapping).
+
 ## Troubleshooting
 
 ### Common Issues
