@@ -12,13 +12,27 @@ module.exports = {
     timeout: 60000,
   },
   categories: {
-    require: ["src/test/utils/hooks.ts", "src/test/steps/categories_cm1.steps.ts"],
+    require: [
+      "src/test/utils/hooks.ts",
+      "src/test/steps/categories_cm1.steps.ts",
+    ],
     requireModule: ["ts-node/register"],
     format: ["progress"],
     paths: ["src/test/features/categories_cm1.feature"],
     publishQuiet: true,
     timeout: 60000,
   },
+
+  "sales-api": {
+    require: ["src/test/utils/hooks.ts", "src/test/steps/sales_api.steps.ts"],
+    requireModule: ["ts-node/register"],
+    format: ["progress"],
+    paths: ["src/test/features/sales_api.feature"],
+    publishQuiet: true,
+    timeout: 60000,
+  },
+};
+
   categories_cm2: {
     require: [
       "src/test/utils/hooks.ts",
@@ -42,3 +56,4 @@ module.exports = {
     timeout: 60000,
   },
 };
+
