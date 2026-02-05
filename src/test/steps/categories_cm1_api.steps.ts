@@ -1,205 +1,165 @@
-import { Given, When, Then, setDefaultTimeout } from "@cucumber/cucumber";
-import { expect, APIRequestContext, APIResponse } from "@playwright/test";
-import { ApiHelper } from "../utils/api-helper";
-import { AuthHelper } from "../utils/auth-helper";
+import { Given, When, Then } from "@cucumber/cucumber";
+import { expect } from "@playwright/test";
+import { CategoryPage } from "../pages/CategoryPage";
 
-setDefaultTimeout(60 * 1000); // 60 seconds
+let categoryPage: CategoryPage;
 
-interface CM1CustomWorld {
-  apiBaseUrl: string;
-  apiHelper: ApiHelper;
-  authHelper: AuthHelper;
-  apiResponse: APIResponse;
-  responseBody: any;
-  userRole: string;
-  apiRequest: APIRequestContext;
-  cm1CreatedCategoryId?: number;
-  cm1CreatedCategoryName?: string;
-  cm1ParentCategoryId?: number;
-  cm1ParentCategoryName?: string;
-  activeAuthToken?: string;
-}
+// store created name per scenario
+let createdCategoryName = "";
 
-/* ==================== UTILITY FUNCTIONS ==================== */
+// ---------- LOGIN ----------
+Given("the user is logged in as Admin", async function () {
+  await this.page.goto("http://localhost:8080/ui/login");
 
-function generateUniqueCM1Name(prefix: string): string {
-  const shortPrefix = prefix.substring(0, 3);
-  return `${shortPrefix}${Date.now().toString().slice(-6)}`;
-}
+  await this.page.waitForSelector('input[name="username"]', { state: "visible" });
+  await this.page.fill('input[name="username"]', "admin");
+  await this.page.fill('input[name="password"]', "admin123");
+  await this.page.click('button[type="submit"]');
 
-function replaceCM1Placeholders(world: CM1CustomWorld, text: string): string {
-  let result = text;
-  if (world.cm1CreatedCategoryId) {
-    result = result.replace(/{cm1CreatedCategoryId}/g, world.cm1CreatedCategoryId.toString());
-  }
-  if (world.cm1ParentCategoryId) {
-    result = result.replace(/{cm1ParentCategoryId}/g, world.cm1ParentCategoryId.toString());
-  }
-  if (world.cm1CreatedCategoryName) {
-    result = result.replace(/{cm1CreatedCategoryName}/g, world.cm1CreatedCategoryName);
-  }
-  return result;
-}
+  await this.page.waitForSelector("text=Categories");
+  categoryPage = new CategoryPage(this.page);
 
-/* ==================== BACKGROUND ==================== */
-
-Given("the CM1 API base URL is {string}", function (this: CM1CustomWorld, baseUrl: string) {
-  this.apiBaseUrl = baseUrl;
-  this.apiHelper = new ApiHelper(this.apiRequest, baseUrl);
-  this.authHelper = new AuthHelper(this.apiRequest, baseUrl);
+  console.log("✓ Admin login complete");
 });
 
-/* ==================== AUTHENTICATION ==================== */
+Given("the user is logged in as User", async function () {
+  await this.page.goto("http://localhost:8080/ui/login");
 
-Given("CM1 admin is authenticated with a valid token", async function (this: CM1CustomWorld) {
-  this.activeAuthToken = await this.authHelper.loginAdmin();
-  this.apiHelper.setAuthToken(this.activeAuthToken);
-  this.userRole = "admin";
+  await this.page.waitForSelector('input[name="username"]', { state: "visible" });
+  await this.page.fill('input[name="username"]', "testuser");
+  await this.page.fill('input[name="password"]', "test123");
+  await this.page.click('button[type="submit"]');
+
+  await this.page.waitForLoadState("networkidle"); // Wait for navigation to complete
+  await this.page.waitForSelector("text=Categories");
+  categoryPage = new CategoryPage(this.page);
+
+  console.log("✓ User login complete");
 });
 
-Given("CM1 user is authenticated with a valid token", async function (this: CM1CustomWorld) {
-  this.activeAuthToken = await this.authHelper.loginUser();
-  this.apiHelper.setAuthToken(this.activeAuthToken);
-  this.userRole = "user";
+// ---------- NAVIGATION ----------
+When("the admin opens the categories page", async function () {
+  await categoryPage.openCategoryListing();
 });
 
-/* ==================== PRECONDITIONS ==================== */
-
-Given("a CM1 category with name {string} exists", async function (this: CM1CustomWorld, categoryName: string) {
-  const originalToken = this.activeAuthToken;
-  const adminToken = await this.authHelper.loginAdmin();
-  this.apiHelper.setAuthToken(adminToken);
-
-  const uniqueName = generateUniqueCM1Name(categoryName);
-
-  const response = await this.apiHelper.post("/api/categories", { name: uniqueName });
-  const responseBody = await this.apiHelper.getResponseBody(response);
-
-  expect(response.status()).toBe(201);
-  this.cm1CreatedCategoryId = responseBody.id;
-  this.cm1CreatedCategoryName = responseBody.name;
-
-  this.apiHelper.setAuthToken(originalToken || "");
+When("the user opens the categories page", async function () {
+  await categoryPage.openCategoryListing();
 });
 
-Given("a CM1 main category with name {string} exists", async function (this: CM1CustomWorld, categoryName: string) {
-  const originalToken = this.activeAuthToken;
-  const adminToken = await this.authHelper.loginAdmin();
-  this.apiHelper.setAuthToken(adminToken);
-
-  const uniqueName = generateUniqueCM1Name(categoryName);
-
-  const response = await this.apiHelper.post("/api/categories", { name: uniqueName });
-  const responseBody = await this.apiHelper.getResponseBody(response);
-
-  expect(response.status()).toBe(201);
-  this.cm1ParentCategoryId = responseBody.id;
-  this.cm1ParentCategoryName = responseBody.name;
-  this.cm1CreatedCategoryId = responseBody.id;
-  this.cm1CreatedCategoryName = responseBody.name;
-
-  this.apiHelper.setAuthToken(originalToken || "");
+// ---------- CM2 UI 01 ----------
+When("the admin clicks Add Category", async function () {
+  await categoryPage.clickAddCategory();
 });
 
-Given(
-  "a CM1 sub-category with name {string} exists under the created parent",
-  async function (this: CM1CustomWorld, categoryName: string) {
-    const originalToken = this.activeAuthToken;
-    const adminToken = await this.authHelper.loginAdmin();
-    this.apiHelper.setAuthToken(adminToken);
+Then("the Add Category page should be opened", async function () {
+  await categoryPage.verifyAddPageOpened();
+});
 
-    const uniqueName = generateUniqueCM1Name(categoryName);
-
-    const response = await this.apiHelper.post("/api/categories", {
-      name: uniqueName,
-      parentId: this.cm1ParentCategoryId,
-    });
-    const responseBody = await this.apiHelper.getResponseBody(response);
-
-    expect(response.status()).toBe(201);
-    this.cm1CreatedCategoryId = responseBody.id;
-    this.cm1CreatedCategoryName = responseBody.name;
-
-    this.apiHelper.setAuthToken(originalToken || "");
-  }
-);
-
-/* ==================== WHEN STEPS - API CALLS ==================== */
-
+// ---------- CM2 UI 02 ----------
 When(
-  /^CM1 (admin|user) sends GET request to "([^"]*)"$/,
-  async function (this: CM1CustomWorld, role: string, endpoint: string) {
-    const resolvedEndpoint = replaceCM1Placeholders(this, endpoint);
+  /^the admin creates a main category with name "([^"]*)"$/,
+  async function (baseName: string) {
+    // Use dynamic name with prefix and truncated timestamp for length constraint
+    createdCategoryName = `Cat${Date.now().toString().slice(-4)}`;
 
-    this.apiResponse = await this.apiHelper.get(resolvedEndpoint);
-    this.responseBody = await this.apiHelper.getResponseBody(this.apiResponse).catch(() => {});
+    await categoryPage.fillCategoryName(createdCategoryName);
+    await categoryPage.selectParentEmpty();
+    await categoryPage.clickSave();
   }
 );
 
-/* ==================== THEN STEPS - ASSERTIONS ==================== */
-
-Then("the CM1 response status code should be {int}", function (this: CM1CustomWorld, expectedStatus: number) {
-  expect(this.apiResponse.status()).toBe(expectedStatus);
+Then("the categories page should show the created category", async function () {
+  await categoryPage.verifyOnCategoriesList();
+  await categoryPage.searchCategory(createdCategoryName);
+  await categoryPage.verifyListContains(createdCategoryName);
 });
 
-Then(
-  "the CM1 response should contain paginated categories",
-  function (this: CM1CustomWorld) {
-    expect(this.responseBody).toBeDefined();
-    // Paginated response should have content array
-    expect(this.responseBody.content).toBeDefined();
-    expect(Array.isArray(this.responseBody.content)).toBe(true);
+// ---------- CM2 UI 03 ----------
+When(
+  /^the admin creates a sub category with name "([^"]*)" under parent "([^"]*)"$/,
+  async function (baseName: string, parentLabel: string) {
+    // Use dynamic name with prefix and truncated timestamp for length constraint
+    createdCategoryName = `Sub${Date.now().toString().slice(-4)}`;
 
-    // Verify the paginated response has items
-    const content = this.responseBody.content;
-    expect(content.length).toBeGreaterThan(0);
+    await categoryPage.fillCategoryName(createdCategoryName);
+    await categoryPage.selectParentByLabel(parentLabel);
+    await categoryPage.clickSave();
   }
 );
 
-Then(
-  "the CM1 response should contain categories matching name {string}",
-  function (this: CM1CustomWorld, expectedName: string) {
-    let actualName = expectedName;
-    if (expectedName === "{cm1CreatedCategoryName}") actualName = this.cm1CreatedCategoryName!;
-
-    expect(this.responseBody).toBeDefined();
-    const content = this.responseBody.content || this.responseBody;
-    const items = Array.isArray(content) ? content : [content];
-
-    const matchFound = items.some((cat: any) => cat.name && cat.name.includes(actualName));
-    expect(matchFound).toBe(true);
-  }
-);
-
-Then(
-  "the CM1 response should contain categories with parentId {string}",
-  function (this: CM1CustomWorld, expectedParentId: string) {
-    let actualParentId = expectedParentId;
-    if (expectedParentId === "{cm1ParentCategoryId}") actualParentId = this.cm1ParentCategoryId!.toString();
-
-    expect(this.responseBody).toBeDefined();
-    // Paginated response should have content array
-    expect(this.responseBody.content).toBeDefined();
-    expect(Array.isArray(this.responseBody.content)).toBe(true);
-  }
-);
-
-Then(
-  "the CM1 response should contain category with correct id and name",
-  function (this: CM1CustomWorld) {
-    expect(this.responseBody).toBeDefined();
-    expect(this.responseBody.id).toBe(this.cm1CreatedCategoryId);
-    expect(this.responseBody.name).toBe(this.cm1CreatedCategoryName);
-  }
-);
-
-Then("the CM1 response should contain a list of categories", function (this: CM1CustomWorld) {
-  expect(this.responseBody).toBeDefined();
-  expect(Array.isArray(this.responseBody)).toBe(true);
+// ---------- CM2 UI 04 ----------
+When("the admin tries to save category with empty name", async function () {
+  await categoryPage.fillCategoryName("");
+  await categoryPage.clickSave();
 });
 
-Then("the CM1 response should contain paginated results", function (this: CM1CustomWorld) {
-  expect(this.responseBody).toBeDefined();
-  expect(this.responseBody.content).toBeDefined();
-  expect(Array.isArray(this.responseBody.content)).toBe(true);
+Then("the Category Name required validation should be shown", async function () {
+  await categoryPage.verifyNameRequiredError();
+});
+
+// ---------- CM2 UI 05 ----------
+When("the admin enters an invalid name length and tries to save", async function () {
+  // too short
+  await categoryPage.fillCategoryName("AA");
+  await categoryPage.clickSave();
+  await categoryPage.verifyNameLengthError();
+
+  // too long
+  await categoryPage.fillCategoryName("ABCDEFGHIJK"); // 11 chars
+  await categoryPage.clickSave();
+  await categoryPage.verifyNameLengthError();
+});
+
+Then("the Category Name length validation should be shown", async function () {
+  await categoryPage.verifyNameLengthError();
+});
+
+When(/^the admin clicks Cancel on add\/edit page$/, async function () {
+  await categoryPage.clickCancel();
+});
+
+Then("the user should be redirected back to categories page", async function () {
+  await categoryPage.verifyOnCategoriesList();
+});
+
+// ---------- CM2 UI 06 ----------
+Then("Add Category button should be hidden for user", async function () {
+  await categoryPage.verifyAddHiddenForUser();
+});
+
+// ---------- CM2 UI 07 ----------
+Then("Edit and Delete actions should be hidden or disabled for user", async function () {
+  await categoryPage.verifyUserEditDeleteHiddenOrDisabled();
+});
+
+// ---------- CM2 UI 08 ----------
+When("the user tries to open the add category page", async function () {
+  await categoryPage.openAddCategoryDirect();
+});
+
+// ---------- CM2 UI 09 ----------
+When("the user tries to open the edit category page for an existing category", async function () {
+  const id = await categoryPage.getFirstCategoryIdFromListOrFallback();
+  await categoryPage.openEditCategoryDirect(id);
+});
+
+// shared (expected) assertion: denied
+Then("access should be denied", async function () {
+  await categoryPage.verifyAccessDenied();
+});
+
+// ---------- CM2 UI 10 ----------
+When("the user attempts to delete a category by request", async function () {
+  // Get any id to attempt delete
+  const id = await categoryPage.getFirstCategoryIdFromListOrFallback();
+  const status = await categoryPage.attemptDeleteViaFetch(id);
+  (this as any).lastDeleteStatus = status;
+});
+
+Then("the delete request should be forbidden or blocked", async function () {
+  const status = (this as any).lastDeleteStatus;
+
+  // Depending on how app behaves, it can return 401/403/404 or redirect.
+  // For a "blocked" expectation, accept 401/403.
+  expect([401, 403]).toContain(status);
 });
