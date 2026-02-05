@@ -6,7 +6,8 @@
     "test": "cucumber-js test",
     "test:categories": "cucumber-js --profile categories",
     "test:categories:cm2": "cucumber-js --profile categories_cm2",
-    "test:categories:cm2:api": "cucumber-js --profile api-categories-cm2"
+    "test:categories:cm2:api": "cucumber-js --profile api-categories-cm2",
+    "test:categories:cm1:api": "cucumber-js --profile api-categories-cm1"
   },
   "keywords": [],
   "author": "",

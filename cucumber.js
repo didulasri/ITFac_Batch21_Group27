@@ -31,8 +31,6 @@ module.exports = {
     publishQuiet: true,
     timeout: 60000,
   },
-};
-
   categories_cm2: {
     require: [
       "src/test/utils/hooks.ts",
@@ -55,5 +53,18 @@ module.exports = {
     publishQuiet: true,
     timeout: 60000,
   },
+  "api-categories-cm1": {
+    require: [
+      "src/test/utils/hooks.ts",
+      "src/test/steps/categories_cm1_api.steps.ts",
+    ],
+    requireModule: ["ts-node/register"],
+    format: ["progress"],
+    paths: ["src/test/features/categories_cm1_api.feature"],
+    publishQuiet: true,
+    timeout: 60000,
+  },
 };
+
+
 
