@@ -6,26 +6,11 @@ import { APIResponse } from "@playwright/test";
 
 /* ==================== BACKGROUND ==================== */
 
-Given("the API base URL is {string}", function (baseUrl: string) {
-    this.apiBaseUrl = baseUrl;
-    this.apiHelper = new ApiHelper(this.apiRequest, baseUrl);
-    this.authHelper = new AuthHelper(this.apiRequest, baseUrl);
-    console.log(`API Base URL set to: ${baseUrl}`);
-});
+
 
 /* ==================== AUTHENTICATION ==================== */
 
-Given("admin is authenticated with a valid token", async function () {
-    const token = await this.authHelper.loginAdmin();
-    this.apiHelper.setAuthToken(token);
-    this.userRole = 'admin';
-});
 
-Given("user is authenticated with a valid token", async function () {
-    const token = await this.authHelper.loginUser();
-    this.apiHelper.setAuthToken(token);
-    this.userRole = 'user';
-});
 
 /* ==================== PRECONDITIONS ==================== */
 
@@ -72,15 +57,7 @@ Given("user role does not have permission to modify plant stock", function () {
 
 /* ==================== WHEN STEPS - API CALLS ==================== */
 
-When("admin sends GET request to {string}", async function (endpoint: string) {
-    this.apiResponse = await this.apiHelper.get(endpoint);
-    this.responseBody = await this.apiHelper.getResponseBody(this.apiResponse);
-});
 
-When("user sends GET request to {string}", async function (endpoint: string) {
-    this.apiResponse = await this.apiHelper.get(endpoint);
-    this.responseBody = await this.apiHelper.getResponseBody(this.apiResponse);
-});
 
 When("user sends PUT request to {string} with stock update", async function (endpoint: string) {
     // First get the existing plant data to ensure we send a complete valid object
@@ -97,12 +74,7 @@ When("user sends PUT request to {string} with stock update", async function (end
 
 /* ==================== THEN STEPS - ASSERTIONS ==================== */
 
-Then("the response status code should be {int}", function (expectedStatus: number) {
-    const actualStatus = this.apiResponse.status();
-    console.log(`→ Verifying status code: Expected ${expectedStatus}, Got ${actualStatus}`);
-    expect(actualStatus).toBe(expectedStatus);
-    console.log(`✓ Status code is ${expectedStatus}`);
-});
+
 
 Then("the response should contain list of all plants", function () {
     console.log("→ Verifying plant list in response");
