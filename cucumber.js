@@ -2,10 +2,7 @@ module.exports = {
   default: {
     require: ["src/test/steps/**/*.ts", "src/test/utils/hooks.ts"],
     requireModule: ["ts-node/register"],
-    format: [
-      "progress",
-      "allure-cucumberjs/reporter",
-    ],
+    format: ["progress", "allure-cucumberjs/reporter"],
     formatOptions: {
       resultsDir: "./allure-results",
     },
@@ -20,10 +17,7 @@ module.exports = {
       "src/test/steps/categories_cm1.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: [
-      "progress",
-      "allure-cucumberjs/reporter",
-    ],
+    format: ["progress", "allure-cucumberjs/reporter"],
     formatOptions: {
       resultsDir: "./allure-results",
     },
@@ -35,10 +29,7 @@ module.exports = {
   "sales-api": {
     require: ["src/test/utils/hooks.ts", "src/test/steps/sales_api.steps.ts"],
     requireModule: ["ts-node/register"],
-    format: [
-      "progress",
-      "allure-cucumberjs/reporter",
-    ],
+    format: ["progress", "allure-cucumberjs/reporter"],
     formatOptions: {
       resultsDir: "./allure-results",
     },
@@ -54,10 +45,7 @@ module.exports = {
       "src/test/steps/categories_cm2.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: [
-      "progress",
-      "allure-cucumberjs/reporter",
-    ],
+    format: ["progress", "allure-cucumberjs/reporter"],
     formatOptions: {
       resultsDir: "./allure-results",
     },
@@ -71,10 +59,7 @@ module.exports = {
       "src/test/steps/categories_cm2_api.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: [
-      "progress",
-      "allure-cucumberjs/reporter",
-    ],
+    format: ["progress", "allure-cucumberjs/reporter"],
     formatOptions: {
       resultsDir: "./allure-results",
     },
@@ -88,10 +73,7 @@ module.exports = {
       "src/test/steps/categories_cm1_api.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: [
-      "progress",
-      "allure-cucumberjs/reporter",
-    ],
+    format: ["progress", "allure-cucumberjs/reporter"],
     formatOptions: {
       resultsDir: "./allure-results",
     },
@@ -100,6 +82,3 @@ module.exports = {
     timeout: 60000,
   },
 };
-
-
-

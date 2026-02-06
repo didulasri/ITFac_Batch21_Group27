@@ -2,40 +2,6 @@ import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { PlantPage } from "../pages/PlantPage";
 
-/* ================= UI LOGIN STEPS ================= */
-
-Given("the admin user is logged in", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', {
-    state: "visible",
-  });
-  await this.page.fill('input[name="username"]', "admin");
-
-  await this.page.fill('input[name="password"]', "admin123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Plants");
-
-  console.log("✓ Admin user login complete");
-});
-
-Given("the standard user is logged in", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', {
-    state: "visible",
-  });
-  await this.page.fill('input[name="username"]', "testuser");
-
-  await this.page.fill('input[name="password"]', "test123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Plants");
-
-  console.log("✓ Standard user login complete");
-});
-
 /* ================= API AUTH STEPS ================= */
 
 Given(
@@ -379,25 +345,51 @@ When(
       },
     );
     const categories = await categoryResponse.json();
-    const matchedCategory = categories.find(
+    console.log(`Categories response: ${JSON.stringify(categories)}`);
+    
+    // Find the matching category (can be main category or subcategory)
+    // The API returns categories with parentName field
+    let matchedCategory = categories.find(
       (c: any) => c.name === data.category,
     );
 
-    if (!matchedCategory)
+    if (!matchedCategory) {
+      console.error(`Category '${data.category}' not found`);
       throw new Error(`Category '${data.category}' not found`);
+    }
+    
+    console.log(`✓ Found category: ${matchedCategory.name} (ID: ${matchedCategory.id}, ParentName: ${matchedCategory.parentName})`);
 
     // 2. GENERATE UNIQUE NAME to prevent 500 Errors
     const uniqueName = `${data.name} ${Date.now()}`;
 
     const plantData = {
-      name: uniqueName, // <--- Send "Daisy 17098234" instead of just "Daisy"
-      categoryId: matchedCategory.id,
+      id: 0,
+      name: uniqueName,
       price: parseFloat(data.price),
       quantity: parseInt(data.quantity),
+      category: {
+        id: matchedCategory.id,
+        name: matchedCategory.name,
+        parent: matchedCategory.parentName && matchedCategory.parentName !== "-" 
+          ? { 
+              id: 0,  // We'll need to get the parent ID from categories if needed
+              name: matchedCategory.parentName,
+              parent: null,
+            }
+          : null,
+        subCategories: [],
+      },
     };
 
+    // Replace {categoryId} with actual ID
+    const actualEndpoint = endpoint.replace(
+      "{categoryId}",
+      matchedCategory.id.toString(),
+    );
+
     this.apiResponse = await this.page.request.post(
-      `http://localhost:8080${endpoint}`,
+      `http://localhost:8080${actualEndpoint}`,
       {
         headers: {
           Authorization: `Bearer ${this.adminToken}`,

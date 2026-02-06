@@ -1,4 +1,6 @@
 @api
+@PM1
+@PM1-API
 Feature: Plant Management - API Test Cases 
 
   Background:
