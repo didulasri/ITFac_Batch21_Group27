@@ -86,18 +86,20 @@ Then("the next set of categories should be displayed", async function () {
 
 /* ================= USER ROLE RESTRICTIONS ================= */
 Then("admin-only category controls should not be visible", async function () {
-  await categoryPage.verifyAdminControlsHidden();
+  await cp(this).verifyAdminControlsHidden();
 });
 
 When("the user tries to open the add category page", async function () {
   await this.page.goto("http://localhost:8080/ui/categories/add");
+  await this.page.waitForLoadState("networkidle");
 });
 
 When("the user tries to open the edit category page for an existing category", async function () {
   const id = existingCategoryId ?? "1";
   await this.page.goto(`http://localhost:8080/ui/categories/edit/${id}`);
+  await this.page.waitForLoadState("networkidle");
 });
 
 Then("access should be denied", async function () {
-  await categoryPage.verifyAccessDenied();
+  await cp(this).verifyAccessDenied();
 });
