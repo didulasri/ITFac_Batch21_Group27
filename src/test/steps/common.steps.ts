@@ -1,6 +1,6 @@
 import { Given } from "@cucumber/cucumber";
 
-/* ================= SHARED LOGIN STEPS =================
+/* ================= COMMON LOGIN STEPS =================
  * These are used by multiple modules (categories, plants, sales, etc.)
  * Defined here ONCE to avoid AMBIGUOUS errors when running all tests together.
  */

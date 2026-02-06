@@ -132,7 +132,9 @@ When(
     const resolvedEndpoint = replaceCM1Placeholders(this, endpoint);
 
     this.apiResponse = await this.apiHelper.get(resolvedEndpoint);
-    this.responseBody = await this.apiHelper.getResponseBody(this.apiResponse).catch(() => {});
+
+    this.responseBody = await this.apiHelper.getResponseBody(this.apiResponse).catch(() => { });
+
   }
 );
 
