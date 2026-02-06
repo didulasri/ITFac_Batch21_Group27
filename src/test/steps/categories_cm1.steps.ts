@@ -7,36 +7,9 @@ let firstRowBeforePagination = "";
 let existingCategoryId: string | null = null;
 
 /* ================= LOGIN STEPS ================= */
-Given("the user is logged in as Admin", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', { state: "visible" });
-  await this.page.fill('input[name="username"]', "admin");
-  await this.page.fill('input[name="password"]', "admin123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Categories");
-  categoryPage = new CategoryPage(this.page);
-
-  console.log("✓ Admin login complete");
-});
-
-Given("the user is logged in as User", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', { state: "visible" });
-  await this.page.fill('input[name="username"]', "testuser");
-  await this.page.fill('input[name="password"]', "test123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Categories");
-  categoryPage = new CategoryPage(this.page);
-
-  console.log("✓ User login complete");
-});
-
 /* ================= OPEN PAGE ================= */
 When("the admin opens the categories page", async function () {
+  categoryPage = new CategoryPage(this.page);
   await categoryPage.openCategoryListing();
 
   // Capture an existing ID for edit access test (if available)
@@ -47,6 +20,7 @@ When("the admin opens the categories page", async function () {
 });
 
 When("the user opens the categories page", async function () {
+  categoryPage = new CategoryPage(this.page);
   await categoryPage.openCategoryListing();
 
   const idCell = this.page.locator("tbody tr:first-child td:nth-child(1)");
