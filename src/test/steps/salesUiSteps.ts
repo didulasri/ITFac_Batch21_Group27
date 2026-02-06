@@ -2,10 +2,11 @@ import { Given, When, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 import { SalesPage } from "../pages/SalesPage";
+import { ApiHelper } from "../utils/api-helper";
+import { AuthHelper } from "../utils/auth-helper";
 
 let loginPage: LoginPage;
 let salesPage: SalesPage;
-let selectedPlantName: string = "White Rose";
 
 Given("the Sales Admin is logged in", async function () {
   loginPage = new LoginPage(this.page);
@@ -18,7 +19,36 @@ Given("the Sales User is logged in", async function () {
 });
 
 Given("a plant exists for sales", async function () {
-  console.log("Assuming plant 'Rose' exists.");
+  await setupPlantHierarchy(this);
+});
+
+Given("a sale exists in the system for UI", async function () {
+  if (!this.testPlantId) {
+    await setupPlantHierarchy(this);
+  }
+
+  const originalToken = this.apiHelper.getAuthToken();
+  const adminToken = await this.authHelper.loginAdmin();
+  this.apiHelper.setAuthToken(adminToken);
+
+  try {
+    const saleResponse = await this.apiHelper.post(
+      `/api/sales/plant/${this.testPlantId}?quantity=1`,
+      {},
+    );
+    if (saleResponse.status() !== 201) {
+      const error = await this.apiHelper.getResponseBody(saleResponse);
+      console.error("❌ Failed to create test sale:", JSON.stringify(error));
+      throw new Error(
+        `Failed to create test sale. Status: ${saleResponse.status()}`,
+      );
+    }
+    const sale = await this.apiHelper.getResponseBody(saleResponse);
+    this.testSaleId = sale.id;
+    console.log(`✓ Created test sale with ID: ${this.testSaleId}`);
+  } finally {
+    if (originalToken) this.apiHelper.setAuthToken(originalToken);
+  }
 });
 
 When("the admin navigates to the Sales page", async function () {
@@ -40,10 +70,10 @@ When("the admin clicks the Save button in Sales", async function () {
 });
 
 When("the admin selects the plant in Sales", async function () {
-  const firstPlant = await salesPage.getFirstAvailablePlant();
-  selectedPlantName = firstPlant;
-  await salesPage.fillSaleForm(selectedPlantName, "");
-  console.log(`Selected plant: ${selectedPlantName}`);
+  const plantToSelect =
+    this.plantName || (await salesPage.getFirstAvailablePlant());
+  console.log(`Selecting plant: ${plantToSelect}`);
+  await salesPage.fillSaleForm(plantToSelect, "");
 });
 
 When(
@@ -54,7 +84,8 @@ When(
 );
 
 Then("the sale should be created and listed", async function () {
-  await salesPage.verifySaleInList(selectedPlantName, "1");
+  const plantName = this.plantName || "White Rose";
+  await salesPage.verifySaleInList(plantName, "1");
 });
 
 Then(
@@ -67,10 +98,6 @@ Then(
     console.log(`Validation message: "${validationMessage}"`);
   },
 );
-
-Given("a sale exists in the system for UI", async function () {
-  console.log("Assuming a sale exists from previous tests or seed");
-});
 
 When("the admin clicks Delete on the first sale in Sales", async function () {
   this.deleteButtonClicked = false;
@@ -172,3 +199,60 @@ Then("access should be denied with 403 or redirect", async function () {
     text?.includes("Forbidden");
   expect(restricted).toBeTruthy();
 });
+
+async function setupPlantHierarchy(world: any) {
+  if (!world.apiHelper) {
+    console.error("ApiHelper not found on world instance!");
+    return;
+  }
+
+  const originalToken = world.apiHelper.getAuthToken();
+  const adminToken = await world.authHelper.loginAdmin();
+  world.apiHelper.setAuthToken(adminToken);
+
+  try {
+    const mainCatResponse = await world.apiHelper.post("/api/categories", {
+      name: `M${Date.now().toString().slice(-6)}`,
+    });
+    if (mainCatResponse.status() !== 201) {
+      const err = await world.apiHelper.getResponseBody(mainCatResponse);
+      throw new Error(`Main Category creation failed: ${JSON.stringify(err)}`);
+    }
+    const mainCat = await world.apiHelper.getResponseBody(mainCatResponse);
+    world.testMainCategoryId = mainCat.id;
+
+    const subCatResponse = await world.apiHelper.post("/api/categories", {
+      name: `S${Date.now().toString().slice(-6)}`,
+      parent: { id: world.testMainCategoryId },
+    });
+    if (subCatResponse.status() !== 201) {
+      const err = await world.apiHelper.getResponseBody(subCatResponse);
+      throw new Error(`Sub Category creation failed: ${JSON.stringify(err)}`);
+    }
+    const subCat = await world.apiHelper.getResponseBody(subCatResponse);
+    world.testSubCategoryId = subCat.id;
+
+    const plantName = `P${Date.now().toString().slice(-6)}`;
+    const plantResponse = await world.apiHelper.post(
+      `/api/plants/category/${world.testSubCategoryId}`,
+      {
+        name: plantName,
+        price: 25.99,
+        quantity: 100,
+      },
+    );
+    if (plantResponse.status() !== 201) {
+      const err = await world.apiHelper.getResponseBody(plantResponse);
+      throw new Error(`Plant creation failed: ${JSON.stringify(err)}`);
+    }
+    const plant = await world.apiHelper.getResponseBody(plantResponse);
+
+    world.testPlantId = plant.id;
+    world.plantName = plant.name;
+    console.log(
+      `✓ Robust data setup complete. Plant ID: ${world.testPlantId}, Name: ${world.plantName}`,
+    );
+  } finally {
+    if (originalToken) world.apiHelper.setAuthToken(originalToken);
+  }
+}

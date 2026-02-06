@@ -12,6 +12,8 @@ import {
   request,
   APIRequestContext,
 } from "@playwright/test";
+import { ApiHelper } from "./api-helper";
+import { AuthHelper } from "./auth-helper";
 
 setDefaultTimeout(60000);
 
@@ -72,7 +74,16 @@ Before({ tags: "@ui" }, async function () {
   this.page = await this.context.newPage();
   this.page.setDefaultTimeout(30000);
 
-  console.log("=== Browser ready ===");
+  this.apiRequest = await request.newContext({
+    baseURL: "http://localhost:8080",
+    extraHTTPHeaders: {
+      "Content-Type": "application/json",
+    },
+  });
+  this.apiHelper = new ApiHelper(this.apiRequest, "http://localhost:8080");
+  this.authHelper = new AuthHelper(this.apiRequest, "http://localhost:8080");
+
+  console.log("=== Browser & API Helpers ready ===");
 });
 
 After({ tags: "@ui" }, async function (scenario) {
@@ -90,8 +101,6 @@ After({ tags: "@ui" }, async function (scenario) {
 
   console.log("=== Browser closed ===");
 });
-
-/* ==================== DEFAULT HOOKS (for untagged scenarios) ==================== */
 
 Before({ tags: "not @api and not @ui" }, async function () {
   console.log("=== Starting browser (default) ===");
