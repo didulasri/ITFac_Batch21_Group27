@@ -4,9 +4,11 @@ module.exports = {
     requireModule: ["ts-node/register"],
     format: [
       "progress",
-      // Correct allure formatter configuration
-      // ["allure-cucumberjs", "./allure-results"],
+      "allure-cucumberjs/reporter",
     ],
+    formatOptions: {
+      resultsDir: "./allure-results",
+    },
     paths: ["src/test/features/**/*.feature"],
     publishQuiet: true,
     timeout: 60000,
@@ -17,7 +19,13 @@ module.exports = {
       "src/test/steps/categories_cm1.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: ["progress"],
+    format: [
+      "progress",
+      "allure-cucumberjs/reporter",
+    ],
+    formatOptions: {
+      resultsDir: "./allure-results",
+    },
     paths: ["src/test/features/categories_cm1.feature"],
     publishQuiet: true,
     timeout: 60000,
@@ -26,7 +34,13 @@ module.exports = {
   "sales-api": {
     require: ["src/test/utils/hooks.ts", "src/test/steps/sales_api.steps.ts"],
     requireModule: ["ts-node/register"],
-    format: ["progress"],
+    format: [
+      "progress",
+      "allure-cucumberjs/reporter",
+    ],
+    formatOptions: {
+      resultsDir: "./allure-results",
+    },
     paths: ["src/test/features/sales_api.feature"],
     publishQuiet: true,
     timeout: 60000,
@@ -37,7 +51,13 @@ module.exports = {
       "src/test/steps/categories_cm2.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: ["progress"],
+    format: [
+      "progress",
+      "allure-cucumberjs/reporter",
+    ],
+    formatOptions: {
+      resultsDir: "./allure-results",
+    },
     paths: ["src/test/features/categories_cm2.feature"],
     publishQuiet: true,
     timeout: 60000,
@@ -48,7 +68,13 @@ module.exports = {
       "src/test/steps/categories_cm2_api.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: ["progress"],
+    format: [
+      "progress",
+      "allure-cucumberjs/reporter",
+    ],
+    formatOptions: {
+      resultsDir: "./allure-results",
+    },
     paths: ["src/test/features/categories_cm2_api.feature"],
     publishQuiet: true,
     timeout: 60000,
@@ -59,7 +85,13 @@ module.exports = {
       "src/test/steps/categories_cm1_api.steps.ts",
     ],
     requireModule: ["ts-node/register"],
-    format: ["progress"],
+    format: [
+      "progress",
+      "allure-cucumberjs/reporter",
+    ],
+    formatOptions: {
+      resultsDir: "./allure-results",
+    },
     paths: ["src/test/features/categories_cm1_api.feature"],
     publishQuiet: true,
     timeout: 60000,
