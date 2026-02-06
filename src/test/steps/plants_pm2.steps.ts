@@ -2,6 +2,40 @@ import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { PlantPage } from "../pages/PlantPage";
 
+/* ================= UI LOGIN STEPS ================= */
+
+Given("the admin user is logged in", async function () {
+  await this.page.goto("http://localhost:8080/ui/login");
+
+  await this.page.waitForSelector('input[name="username"]', {
+    state: "visible",
+  });
+  await this.page.fill('input[name="username"]', "admin");
+
+  await this.page.fill('input[name="password"]', "admin123");
+  await this.page.click('button[type="submit"]');
+
+  await this.page.waitForSelector("text=Plants");
+
+  console.log("✓ Admin user login complete");
+});
+
+Given("the standard user is logged in", async function () {
+  await this.page.goto("http://localhost:8080/ui/login");
+
+  await this.page.waitForSelector('input[name="username"]', {
+    state: "visible",
+  });
+  await this.page.fill('input[name="username"]', "testuser");
+
+  await this.page.fill('input[name="password"]', "test123");
+  await this.page.click('button[type="submit"]');
+
+  await this.page.waitForSelector("text=Plants");
+
+  console.log("✓ Standard user login complete");
+});
+
 /* ================= API AUTH STEPS ================= */
 
 Given(
