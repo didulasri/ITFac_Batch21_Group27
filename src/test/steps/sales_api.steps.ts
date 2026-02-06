@@ -3,21 +3,6 @@ import { expect } from "@playwright/test";
 import { ApiHelper } from "../utils/api-helper";
 import { AuthHelper } from "../utils/auth-helper";
 
-/**
- * Background & Configuration steps
- */
-
-
-
-/**
- * Authentication steps for different roles
- */
-
-
-
-/**
- * Data Precondition steps
- */
 Given("a plant exists for sale creation", async function () {
   await setupPlantHierarchy(this);
 });
@@ -129,9 +114,6 @@ Given("multiple sales exist in the system", async function () {
   }
 });
 
-/**
- * Utility function to initialize a valid Category -> Sub-category -> Plant hierarchy
- */
 async function setupPlantHierarchy(world: any) {
   const originalToken = world.apiHelper.getAuthToken();
   const adminToken = await world.authHelper.loginAdmin();
@@ -188,9 +170,6 @@ async function setupPlantHierarchy(world: any) {
   }
 }
 
-/**
- * Action steps for Sales API endpoints
- */
 When(
   "admin sends POST request to create sale for the plant with quantity {int}",
   async function (quantity: number) {
@@ -285,14 +264,6 @@ When("user sends DELETE request to delete the sale", async function () {
   }
 });
 
-
-
-
-
-
-/**
- * Assertion steps
- */
 Then("the sale should be created successfully", function () {
   console.log("→ Verifying sale creation");
   if (!this.responseBody || !this.responseBody.id) {
@@ -336,8 +307,6 @@ Then("the response should contain the sale details", function () {
   console.log(`✓ Sale details verified for ID: ${this.testSaleId}`);
 });
 
-
-
 Then(
   "the response should contain paginated sales with {int} items per page",
   function (pageSize: number) {
@@ -360,5 +329,3 @@ Then(
     }
   },
 );
-
-
