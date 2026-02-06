@@ -27,7 +27,7 @@ Feature: Sales Management UI
   @SM-UI-003
   Scenario: Admin deletes sale
     Given the Sales Admin is logged in
-    And a sale exists in the system
+    And a sale exists in the system for UI
     When the admin navigates to the Sales page
     And the admin clicks Delete on the first sale in Sales
     And the admin confirms deletion in Sales
@@ -36,7 +36,7 @@ Feature: Sales Management UI
   @SM-UI-004
   Scenario: Cancel delete action
     Given the Sales Admin is logged in
-    And a sale exists in the system
+    And a sale exists in the system for UI
     When the admin navigates to the Sales page
     And the admin clicks Delete on the first sale in Sales
     And the admin cancels deletion in Sales
