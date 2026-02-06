@@ -1,38 +1,7 @@
-import { Given, When, Then } from "@cucumber/cucumber";
+import { When, Then } from "@cucumber/cucumber";
 import { PlantPage } from "../pages/PlantPage";
 
-/* ================= LOGIN STEPS ================= */
-Given("the user is logged in as Admin", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', {
-    state: "visible",
-  });
-  await this.page.fill('input[name="username"]', "admin");
-
-  await this.page.fill('input[name="password"]', "admin123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Plants");
-
-  console.log("✓ Admin login complete");
-});
-
-Given("the user is logged in as User", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', {
-    state: "visible",
-  });
-  await this.page.fill('input[name="username"]', "testuser");
-
-  await this.page.fill('input[name="password"]', "test123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Plants");
-
-  console.log("✓ User login complete");
-});
+// Login steps are in common.steps.ts (shared across all modules)
 
 /* ================= OPEN PAGE ================= */
 
