@@ -102,23 +102,23 @@ npx cucumber-js
 
 ```bash
 # All UI tests
-npx cucumber-js --tags @ui
+npx cucumber-js --tags "@ui"
 
 # Sales Management UI tests
-npx cucumber-js src/test/features/sales_ui.feature --tags @sales-ui
+npx cucumber-js src/test/features/sales_ui.feature --tags "@sales-ui"
 
 # Specific test by ID
-npx cucumber-js --tags @SM-UI-001
+npx cucumber-js --tags "@SM-UI-001"
 ```
 
 ### Run API Tests Only
 
 ```bash
 # All API tests
-npx cucumber-js --tags @api
+npx cucumber-js --tags "@api"
 
 # Sales Management API tests
-npx cucumber-js --tags @sales-api
+npx cucumber-js --tags "@sales-api"
 ```
 
 ### Run Tests with JSON Report
