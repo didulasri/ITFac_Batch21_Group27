@@ -15,7 +15,7 @@ Feature: Sales Management - API Test Cases
   @SM-API-002
   Scenario: Admin delete sale
     Given admin is authenticated with a valid token
-    And a sale exists in the system
+    And a sale exists in the system for API
     When admin sends DELETE request to delete the sale
     Then the response status code should be 204
 
@@ -50,7 +50,7 @@ Feature: Sales Management - API Test Cases
   @SM-API-007
   Scenario: User get sale by ID
     Given user is authenticated with a valid token
-    And a sale exists in the system
+    And a sale exists in the system for API
     When user sends GET request to get the sale by ID
     Then the response status code should be 200
     And the response should contain the sale details
@@ -65,7 +65,7 @@ Feature: Sales Management - API Test Cases
   @SM-API-009
   Scenario: User delete forbidden
     Given user is authenticated with a valid token
-    And a sale exists in the system
+    And a sale exists in the system for API
     When user sends DELETE request to delete the sale
     Then the response status code should be 403
 

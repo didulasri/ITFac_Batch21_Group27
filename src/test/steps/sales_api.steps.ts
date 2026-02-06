@@ -22,7 +22,7 @@ Given("a plant exists for sale creation", async function () {
   await setupPlantHierarchy(this);
 });
 
-Given("a sale exists in the system", async function () {
+Given("a sale exists in the system for API", async function () {
   if (!this.testPlantId) {
     await setupPlantHierarchy(this);
   }

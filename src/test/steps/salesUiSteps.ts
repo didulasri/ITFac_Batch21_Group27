@@ -68,7 +68,7 @@ Then(
   },
 );
 
-Given("a sale exists in the system", async function () {
+Given("a sale exists in the system for UI", async function () {
   console.log("Assuming a sale exists from previous tests or seed");
 });
 
