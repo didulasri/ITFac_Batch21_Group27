@@ -346,19 +346,19 @@ When(
     );
     const categories = await categoryResponse.json();
     console.log(`Categories response: ${JSON.stringify(categories)}`);
-    
+
     // Find the matching category (can be main category or subcategory)
     // The API returns categories with parentName field
-    let matchedCategory = categories.find(
-      (c: any) => c.name === data.category,
-    );
+    let matchedCategory = categories.find((c: any) => c.name === data.category);
 
     if (!matchedCategory) {
       console.error(`Category '${data.category}' not found`);
       throw new Error(`Category '${data.category}' not found`);
     }
-    
-    console.log(`✓ Found category: ${matchedCategory.name} (ID: ${matchedCategory.id}, ParentName: ${matchedCategory.parentName})`);
+
+    console.log(
+      `✓ Found category: ${matchedCategory.name} (ID: ${matchedCategory.id}, ParentName: ${matchedCategory.parentName})`,
+    );
 
     // 2. GENERATE UNIQUE NAME to prevent 500 Errors
     const uniqueName = `${data.name} ${Date.now()}`;
@@ -371,13 +371,14 @@ When(
       category: {
         id: matchedCategory.id,
         name: matchedCategory.name,
-        parent: matchedCategory.parentName && matchedCategory.parentName !== "-" 
-          ? { 
-              id: 0,  // We'll need to get the parent ID from categories if needed
-              name: matchedCategory.parentName,
-              parent: null,
-            }
-          : null,
+        parent:
+          matchedCategory.parentName && matchedCategory.parentName !== "-"
+            ? {
+                id: 0, // We'll need to get the parent ID from categories if needed
+                name: matchedCategory.parentName,
+                parent: null,
+              }
+            : null,
         subCategories: [],
       },
     };
