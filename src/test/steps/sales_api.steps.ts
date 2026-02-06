@@ -13,6 +13,7 @@ Given("the API base URL is {string}", function (baseUrl: string) {
   console.log(`API Base URL set to: ${baseUrl}`);
 });
 
+
 /**
  * Authentication steps for different roles
  */
@@ -27,6 +28,7 @@ Given("user is authenticated with a valid token", async function () {
   this.apiHelper.setAuthToken(token);
   this.userRole = "user";
 });
+
 
 /**
  * Data Precondition steps
@@ -298,6 +300,15 @@ When("user sends DELETE request to delete the sale", async function () {
   }
 });
 
+
+
+
+When("admin sends GET request to {string}", async function (endpoint: string) {
+  console.log(`admin → GET ${endpoint}`);
+  this.apiResponse = await this.apiHelper.get(endpoint);
+  this.responseBody = await this.apiHelper.getResponseBody(this.apiResponse);
+});
+
 When("user sends GET request to {string}", async function (endpoint: string) {
   console.log(`→ GET ${endpoint}`);
   this.apiResponse = await this.apiHelper.get(endpoint);
@@ -350,17 +361,7 @@ Then("the response should contain the sale details", function () {
   console.log(`✓ Sale details verified for ID: ${this.testSaleId}`);
 });
 
-Then(
-  "the response status code should be {int}",
-  function (expectedStatus: number) {
-    const actualStatus = this.apiResponse.status();
-    console.log(
-      `→ Verifying status code: Expected ${expectedStatus}, Got ${actualStatus}`,
-    );
-    expect(actualStatus).toBe(expectedStatus);
-    console.log(`✓ Status code is ${expectedStatus}`);
-  },
-);
+
 
 Then(
   "the response should contain paginated sales with {int} items per page",
@@ -382,5 +383,17 @@ Then(
         `✓ Paginated response verified: ${this.responseBody.length} items`,
       );
     }
+  },
+);
+
+Then(
+  "the response status code should be {int}",
+  function (expectedStatus: number) {
+    const actualStatus = this.apiResponse.status();
+    console.log(
+      `→ Verifying status code: Expected ${expectedStatus}, Got ${actualStatus}`,
+    );
+    expect(actualStatus).toBe(expectedStatus);
+    console.log(`✓ Status code is ${expectedStatus}`);
   },
 );
