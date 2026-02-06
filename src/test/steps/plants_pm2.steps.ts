@@ -2,6 +2,11 @@ import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { PlantPage } from "../pages/PlantPage";
 
+// Helper to get the appropriate requester (apiRequest for API tests, page.request for UI tests)
+function getRequester(context: any) {
+  return context.apiRequest || context.page.request;
+}
+
 /* ================= UI LOGIN STEPS ================= */
 
 Given("the admin user is logged in", async function () {
@@ -41,7 +46,10 @@ Given("the standard user is logged in", async function () {
 Given(
   "the user is authenticated as Admin with a valid access token",
   async function () {
-    const response = await this.page.request.post(
+    // Use apiRequest if available (API-only tests), otherwise use page.request (UI tests)
+    const requester = this.apiRequest || this.page.request;
+
+    const response = await requester.post(
       "http://localhost:8080/api/auth/login",
       {
         data: {
@@ -73,8 +81,11 @@ Given(
 Given(
   "the user is authenticated as User with a valid access token",
   async function () {
+    // Use apiRequest if available (API-only tests), otherwise use page.request (UI tests)
+    const requester = this.apiRequest || this.page.request;
+
     // Get user token via API
-    const response = await this.page.request.post(
+    const response = await requester.post(
       "http://localhost:8080/api/auth/login",
       {
         data: {
@@ -376,8 +387,11 @@ When(
   async function (endpoint: string, dataTable: DataTable) {
     const data = dataTable.rowsHash();
 
+    // Use apiRequest if available (API-only tests), otherwise use page.request (UI tests)
+    const requester = this.apiRequest || this.page.request;
+
     // 1. Get Category ID (Your code is doing this correctly now, as logs show '5')
-    const categoryResponse = await this.page.request.get(
+    const categoryResponse = await requester.get(
       "http://localhost:8080/api/categories",
       {
         headers: { Authorization: `Bearer ${this.adminToken}` },
@@ -428,7 +442,7 @@ When(
       matchedCategory.id.toString(),
     );
 
-    this.apiResponse = await this.page.request.post(
+    this.apiResponse = await requester.post(
       `http://localhost:8080${actualEndpoint}`,
       {
         headers: {
@@ -446,6 +460,7 @@ When(
 When(
   "the admin sends a POST request to {string} without the plant name field",
   async function (endpoint: string) {
+    const requester = getRequester(this);
     const categoryId = this.categoryMap ? this.categoryMap["Flowers"] : 1;
     const plantData = {
       categoryId: categoryId,
@@ -454,7 +469,7 @@ When(
       // name is intentionally missing
     };
 
-    this.apiResponse = await this.page.request.post(
+    this.apiResponse = await requester.post(
       `http://localhost:8080${endpoint}`,
       {
         headers: {
@@ -474,8 +489,10 @@ When(
   async function (endpoint: string, dataTable: DataTable) {
     const data = dataTable.rowsHash();
 
+    const requester = getRequester(this);
+
     // 1. Get existing plant
-    const listResponse = await this.page.request.get(
+    const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
         headers: { Authorization: `Bearer ${this.adminToken}` },
@@ -501,7 +518,7 @@ When(
     const realEndpoint = endpoint.replace("{id}", existingPlant.id);
 
     // 3. Send Request
-    this.apiResponse = await this.page.request.put(
+    this.apiResponse = await requester.put(
       `http://localhost:8080${realEndpoint}`,
       {
         headers: {
@@ -522,17 +539,15 @@ When(
 When(
   "the admin sends a DELETE request to {string}",
   async function (endpoint: string) {
+    const requester = getRequester(this);
     const plantId = this.plantId || 1;
     const url = endpoint.replace("{id}", plantId.toString());
 
-    this.apiResponse = await this.page.request.delete(
-      `http://localhost:8080${url}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.adminToken}`,
-        },
+    this.apiResponse = await requester.delete(`http://localhost:8080${url}`, {
+      headers: {
+        Authorization: `Bearer ${this.adminToken}`,
       },
-    );
+    });
 
     console.log(`✓ DELETE request sent to ${url}`);
   },
@@ -541,6 +556,7 @@ When(
 When(
   "the admin sends a POST request to {string} with negative quantity {string}",
   async function (endpoint: string, quantity: string) {
+    const requester = getRequester(this);
     const categoryId = this.categoryMap ? this.categoryMap["Flowers"] : 1;
     const plantData = {
       name: "Test Plant",
@@ -549,7 +565,7 @@ When(
       quantity: parseInt(quantity),
     };
 
-    this.apiResponse = await this.page.request.post(
+    this.apiResponse = await requester.post(
       `http://localhost:8080${endpoint}`,
       {
         headers: {
@@ -571,6 +587,7 @@ When(
 When(
   "the user sends a POST request to {string} with plant data",
   async function (endpoint: string) {
+    const requester = getRequester(this);
     const categoryId = this.categoryMap ? this.categoryMap["Flowers"] : 1;
     const plantData = {
       name: "New Plant",
@@ -579,7 +596,7 @@ When(
       quantity: 50,
     };
 
-    this.apiResponse = await this.page.request.post(
+    this.apiResponse = await requester.post(
       `http://localhost:8080${endpoint}`,
       {
         headers: {
@@ -597,10 +614,11 @@ When(
 When(
   "the user sends a PUT request to {string} with updated data",
   async function (endpoint: string) {
+    const requester = getRequester(this);
     // 1. GET ALL PLANTS to find a valid one (Dynamic ID)
     // Note: We use the User Token here, assuming Users can at least READ the list.
     // If Users can't read, you might need to use adminToken just to get the ID.
-    const listResponse = await this.page.request.get(
+    const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
         headers: { Authorization: `Bearer ${this.userToken}` },
@@ -635,16 +653,13 @@ When(
         this.existingPlant?.category?.id || this.existingPlant?.categoryId || 1,
     };
 
-    this.apiResponse = await this.page.request.put(
-      `http://localhost:8080${url}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.userToken}`,
-          "Content-Type": "application/json",
-        },
-        data: payload,
+    this.apiResponse = await requester.put(`http://localhost:8080${url}`, {
+      headers: {
+        Authorization: `Bearer ${this.userToken}`,
+        "Content-Type": "application/json",
       },
-    );
+      data: payload,
+    });
 
     console.log(`✓ User PUT request sent to ${url}`);
   },
@@ -653,17 +668,15 @@ When(
 When(
   "the user sends a DELETE request to {string}",
   async function (endpoint: string) {
+    const requester = getRequester(this);
     const plantId = this.plantId || 1;
     const url = endpoint.replace("{id}", plantId.toString());
 
-    this.apiResponse = await this.page.request.delete(
-      `http://localhost:8080${url}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.userToken}`,
-        },
+    this.apiResponse = await requester.delete(`http://localhost:8080${url}`, {
+      headers: {
+        Authorization: `Bearer ${this.userToken}`,
       },
-    );
+    });
 
     console.log(`✓ User DELETE request sent to ${url}`);
   },
@@ -672,8 +685,9 @@ When(
 When(
   "the user sends a GET request to {string}",
   async function (endpoint: string) {
+    const requester = getRequester(this);
     // 1. Fetch the list of plants to find a valid ID
-    const listResponse = await this.page.request.get(
+    const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
         headers: { Authorization: `Bearer ${this.userToken}` },
@@ -699,14 +713,11 @@ When(
     const url = endpoint.replace("{id}", validId.toString());
 
     // 3. Send the specific GET request
-    this.apiResponse = await this.page.request.get(
-      `http://localhost:8080${url}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.userToken}`,
-        },
+    this.apiResponse = await requester.get(`http://localhost:8080${url}`, {
+      headers: {
+        Authorization: `Bearer ${this.userToken}`,
       },
-    );
+    });
 
     console.log(`✓ User GET request sent to ${url}`);
   },
@@ -715,8 +726,9 @@ When(
 When(
   "the user sends a PUT request to {string} with updated quantity",
   async function (endpoint: string) {
+    const requester = getRequester(this);
     // 1. GET ALL PLANTS to find a valid one (Dynamic ID)
-    const listResponse = await this.page.request.get(
+    const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
         headers: { Authorization: `Bearer ${this.userToken}` },
@@ -753,16 +765,13 @@ When(
         this.existingPlant?.category?.id || this.existingPlant?.categoryId || 1,
     };
 
-    this.apiResponse = await this.page.request.put(
-      `http://localhost:8080${url}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.userToken}`,
-          "Content-Type": "application/json",
-        },
-        data: payload,
+    this.apiResponse = await requester.put(`http://localhost:8080${url}`, {
+      headers: {
+        Authorization: `Bearer ${this.userToken}`,
+        "Content-Type": "application/json",
       },
-    );
+      data: payload,
+    });
 
     console.log(
       `✓ User PUT request sent to ${url} with valid payload structure`,
