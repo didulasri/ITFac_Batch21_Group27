@@ -2,6 +2,40 @@ import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { PlantPage } from "../pages/PlantPage";
 
+/* ================= UI LOGIN STEPS ================= */
+
+Given("the admin user is logged in", async function () {
+  await this.page.goto("http://localhost:8080/ui/login");
+
+  await this.page.waitForSelector('input[name="username"]', {
+    state: "visible",
+  });
+  await this.page.fill('input[name="username"]', "admin");
+
+  await this.page.fill('input[name="password"]', "admin123");
+  await this.page.click('button[type="submit"]');
+
+  await this.page.waitForSelector("text=Plants");
+
+  console.log("✓ Admin user login complete");
+});
+
+Given("the standard user is logged in", async function () {
+  await this.page.goto("http://localhost:8080/ui/login");
+
+  await this.page.waitForSelector('input[name="username"]', {
+    state: "visible",
+  });
+  await this.page.fill('input[name="username"]', "testuser");
+
+  await this.page.fill('input[name="password"]', "test123");
+  await this.page.click('button[type="submit"]');
+
+  await this.page.waitForSelector("text=Plants");
+
+  console.log("✓ Standard user login complete");
+});
+
 /* ================= API AUTH STEPS ================= */
 
 Given(
@@ -204,15 +238,20 @@ When("the user selects a plant from the list", async function () {
 Then(
   "the plant {string} should be created successfully and appear in the plant list",
   async function (plantName: string) {
-    const plantPage = new PlantPage(this.page);
-    await plantPage.verifyPlantsDisplayed();
+    try {
+      const plantPage = new PlantPage(this.page);
+      await plantPage.verifyPlantsDisplayed();
 
-    // Verify the plant name appears in the list
-    const plantFound = await this.page.textContent(
-      `tbody tr:has-text("${plantName}")`,
-    );
-    expect(plantFound).toBeTruthy();
-    console.log(`✓ Plant "${plantName}" created and visible in list`);
+      // Verify the plant name appears in the list
+      const plantFound = await this.page.textContent(
+        `tbody tr:has-text("${plantName}")`,
+      );
+      expect(plantFound).toBeTruthy();
+      console.log(`✓ Plant "${plantName}" created and visible in list`);
+    } catch (error) {
+      console.error(`✗ Plant verification failed: ${error}`);
+      throw error;
+    }
   },
 );
 
