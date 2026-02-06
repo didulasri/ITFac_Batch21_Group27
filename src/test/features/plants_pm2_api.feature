@@ -1,4 +1,5 @@
 @PM2-API
+@api
 @PM2
 
 Feature: Plant Management PM2 - CRUD Operations and Valiations
@@ -8,9 +9,9 @@ Feature: Plant Management PM2 - CRUD Operations and Valiations
 @PM2-API-01
 Scenario: PM2-API-01 - Admin Create new plant with valid data
     Given the user is authenticated as Admin with a valid access token
-    When the admin sends a POST request to "/api/plants" with valid plant data:
+    When the admin sends a POST request to "/api/plants/category/{categoryId}" with valid plant data:
       | field    | value         |
-      | name     | uniqueName         |
+      | name     | Anthurium         |
       | category | Flowers       |
       | price    | 15.99         |
       | quantity | 100           |
