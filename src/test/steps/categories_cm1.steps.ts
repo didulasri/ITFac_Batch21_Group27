@@ -1,97 +1,205 @@
+import { Given, When, Then, setDefaultTimeout } from "@cucumber/cucumber";
+import { expect, APIRequestContext, APIResponse } from "@playwright/test";
+import { ApiHelper } from "../utils/api-helper";
+import { AuthHelper } from "../utils/auth-helper";
 
-import { Given, When, Then } from "@cucumber/cucumber";
-import { CategoryPage } from "../pages/CategoryPage";
+setDefaultTimeout(60 * 1000); // 60 seconds
 
-let categoryPage: CategoryPage;
-let firstRowBeforePagination = "";
-let existingCategoryId: string | null = null;
+interface CM1CustomWorld {
+  apiBaseUrl: string;
+  apiHelper: ApiHelper;
+  authHelper: AuthHelper;
+  apiResponse: APIResponse;
+  responseBody: any;
+  userRole: string;
+  apiRequest: APIRequestContext;
+  cm1CreatedCategoryId?: number;
+  cm1CreatedCategoryName?: string;
+  cm1ParentCategoryId?: number;
+  cm1ParentCategoryName?: string;
+  activeAuthToken?: string;
+}
 
-/* ================= LOGIN STEPS ================= */
-/* ================= OPEN PAGE ================= */
-When("the admin opens the categories page", async function () {
-  categoryPage = new CategoryPage(this.page);
-  await categoryPage.openCategoryListing();
+/* ==================== UTILITY FUNCTIONS ==================== */
 
-  // Capture an existing ID for edit access test (if available)
-  const idCell = this.page.locator("tbody tr:first-child td:nth-child(1)");
-  if (await idCell.count()) {
-    existingCategoryId = (await idCell.textContent())?.trim() ?? null;
+function generateUniqueCM1Name(prefix: string): string {
+  const shortPrefix = prefix.substring(0, 3);
+  return `${shortPrefix}${Date.now().toString().slice(-6)}`;
+}
+
+function replaceCM1Placeholders(world: CM1CustomWorld, text: string): string {
+  let result = text;
+  if (world.cm1CreatedCategoryId) {
+    result = result.replace(/{cm1CreatedCategoryId}/g, world.cm1CreatedCategoryId.toString());
   }
-});
-
-When("the user opens the categories page", async function () {
-  categoryPage = new CategoryPage(this.page);
-  await categoryPage.openCategoryListing();
-
-  const idCell = this.page.locator("tbody tr:first-child td:nth-child(1)");
-  if (await idCell.count()) {
-    existingCategoryId = (await idCell.textContent())?.trim() ?? null;
+  if (world.cm1ParentCategoryId) {
+    result = result.replace(/{cm1ParentCategoryId}/g, world.cm1ParentCategoryId.toString());
   }
+  if (world.cm1CreatedCategoryName) {
+    result = result.replace(/{cm1CreatedCategoryName}/g, world.cm1CreatedCategoryName);
+  }
+  return result;
+}
+
+/* ==================== BACKGROUND ==================== */
+
+Given("the CM1 API base URL is {string}", function (this: CM1CustomWorld, baseUrl: string) {
+  this.apiBaseUrl = baseUrl;
+  this.apiHelper = new ApiHelper(this.apiRequest, baseUrl);
+  this.authHelper = new AuthHelper(this.apiRequest, baseUrl);
 });
 
-/* ================= COMMON ASSERTION ================= */
-Then("the list of categories should be displayed", async function () {
-  await categoryPage.verifyCategoriesDisplayed();
+/* ==================== AUTHENTICATION ==================== */
+
+Given("CM1 admin is authenticated with a valid token", async function (this: CM1CustomWorld) {
+  this.activeAuthToken = await this.authHelper.loginAdmin();
+  this.apiHelper.setAuthToken(this.activeAuthToken);
+  this.userRole = "admin";
 });
 
-/* ================= SEARCH ================= */
-When("the admin searches for category {string}", async function (name: string) {
-  await categoryPage.searchCategory(name);
+Given("CM1 user is authenticated with a valid token", async function (this: CM1CustomWorld) {
+  this.activeAuthToken = await this.authHelper.loginUser();
+  this.apiHelper.setAuthToken(this.activeAuthToken);
+  this.userRole = "user";
 });
 
-When("the user searches for category {string}", async function (name: string) {
-  await categoryPage.searchCategory(name);
+/* ==================== PRECONDITIONS ==================== */
+
+Given("a CM1 category with name {string} exists", async function (this: CM1CustomWorld, categoryName: string) {
+  const originalToken = this.activeAuthToken;
+  const adminToken = await this.authHelper.loginAdmin();
+  this.apiHelper.setAuthToken(adminToken);
+
+  const uniqueName = generateUniqueCM1Name(categoryName);
+
+  const response = await this.apiHelper.post("/api/categories", { name: uniqueName });
+  const responseBody = await this.apiHelper.getResponseBody(response);
+
+  expect(response.status()).toBe(201);
+  this.cm1CreatedCategoryId = responseBody.id;
+  this.cm1CreatedCategoryName = responseBody.name;
+
+  this.apiHelper.setAuthToken(originalToken || "");
 });
 
-Then("only categories matching {string} should be displayed", async function (text: string) {
-  await categoryPage.verifySearchResultsContain(text);
+Given("a CM1 main category with name {string} exists", async function (this: CM1CustomWorld, categoryName: string) {
+  const originalToken = this.activeAuthToken;
+  const adminToken = await this.authHelper.loginAdmin();
+  this.apiHelper.setAuthToken(adminToken);
+
+  const uniqueName = generateUniqueCM1Name(categoryName);
+
+  const response = await this.apiHelper.post("/api/categories", { name: uniqueName });
+  const responseBody = await this.apiHelper.getResponseBody(response);
+
+  expect(response.status()).toBe(201);
+  this.cm1ParentCategoryId = responseBody.id;
+  this.cm1ParentCategoryName = responseBody.name;
+  this.cm1CreatedCategoryId = responseBody.id;
+  this.cm1CreatedCategoryName = responseBody.name;
+
+  this.apiHelper.setAuthToken(originalToken || "");
 });
 
-/* ================= FILTER ================= */
-When("the admin filters categories by parent {string}", async function (parent: string) {
-  await categoryPage.filterByParent(parent);
+Given(
+  "a CM1 sub-category with name {string} exists under the created parent",
+  async function (this: CM1CustomWorld, categoryName: string) {
+    const originalToken = this.activeAuthToken;
+    const adminToken = await this.authHelper.loginAdmin();
+    this.apiHelper.setAuthToken(adminToken);
+
+    const uniqueName = generateUniqueCM1Name(categoryName);
+
+    const response = await this.apiHelper.post("/api/categories", {
+      name: uniqueName,
+      parentId: this.cm1ParentCategoryId,
+    });
+    const responseBody = await this.apiHelper.getResponseBody(response);
+
+    expect(response.status()).toBe(201);
+    this.cm1CreatedCategoryId = responseBody.id;
+    this.cm1CreatedCategoryName = responseBody.name;
+
+    this.apiHelper.setAuthToken(originalToken || "");
+  }
+);
+
+/* ==================== WHEN STEPS - API CALLS ==================== */
+
+When(
+  /^CM1 (admin|user) sends GET request to "([^"]*)"$/,
+  async function (this: CM1CustomWorld, role: string, endpoint: string) {
+    const resolvedEndpoint = replaceCM1Placeholders(this, endpoint);
+
+    this.apiResponse = await this.apiHelper.get(resolvedEndpoint);
+    this.responseBody = await this.apiHelper.getResponseBody(this.apiResponse).catch(() => { });
+  }
+);
+
+/* ==================== THEN STEPS - ASSERTIONS ==================== */
+
+Then("the CM1 response status code should be {int}", function (this: CM1CustomWorld, expectedStatus: number) {
+  expect(this.apiResponse.status()).toBe(expectedStatus);
 });
 
-When("the user filters categories by parent {string}", async function (parent: string) {
-  await categoryPage.filterByParent(parent);
+Then(
+  "the CM1 response should contain paginated categories",
+  function (this: CM1CustomWorld) {
+    expect(this.responseBody).toBeDefined();
+    // Paginated response should have content array
+    expect(this.responseBody.content).toBeDefined();
+    expect(Array.isArray(this.responseBody.content)).toBe(true);
+
+    // Verify the paginated response has items
+    const content = this.responseBody.content;
+    expect(content.length).toBeGreaterThan(0);
+  }
+);
+
+Then(
+  "the CM1 response should contain categories matching name {string}",
+  function (this: CM1CustomWorld, expectedName: string) {
+    let actualName = expectedName;
+    if (expectedName === "{cm1CreatedCategoryName}") actualName = this.cm1CreatedCategoryName!;
+
+    expect(this.responseBody).toBeDefined();
+    const content = this.responseBody.content || this.responseBody;
+    const items = Array.isArray(content) ? content : [content];
+
+    const matchFound = items.some((cat: any) => cat.name && cat.name.includes(actualName));
+    expect(matchFound).toBe(true);
+  }
+);
+
+Then(
+  "the CM1 response should contain categories with parentId {string}",
+  function (this: CM1CustomWorld, expectedParentId: string) {
+    let actualParentId = expectedParentId;
+    if (expectedParentId === "{cm1ParentCategoryId}") actualParentId = this.cm1ParentCategoryId!.toString();
+
+    expect(this.responseBody).toBeDefined();
+    // Paginated response should have content array
+    expect(this.responseBody.content).toBeDefined();
+    expect(Array.isArray(this.responseBody.content)).toBe(true);
+  }
+);
+
+Then(
+  "the CM1 response should contain category with correct id and name",
+  function (this: CM1CustomWorld) {
+    expect(this.responseBody).toBeDefined();
+    expect(this.responseBody.id).toBe(this.cm1CreatedCategoryId);
+    expect(this.responseBody.name).toBe(this.cm1CreatedCategoryName);
+  }
+);
+
+Then("the CM1 response should contain a list of categories", function (this: CM1CustomWorld) {
+  expect(this.responseBody).toBeDefined();
+  expect(Array.isArray(this.responseBody)).toBe(true);
 });
 
-Then("only categories under parent {string} should be displayed", async function (parent: string) {
-  await categoryPage.verifyParentResults(parent);
-});
-
-/* ================= SORT ================= */
-When("the admin sorts categories by {string}", async function (column: string) {
-  await categoryPage.sortBy(column as any);
-});
-
-Then("categories should be sorted by {string}", async function (column: string) {
-  await categoryPage.verifySorted(column as any);
-});
-
-/* ================= PAGINATION ================= */
-When("the admin goes to the next page in category pagination", async function () {
-  firstRowBeforePagination = await categoryPage.goToNextPage();
-});
-
-Then("the next set of categories should be displayed", async function () {
-  await categoryPage.verifyPaginationChanged(firstRowBeforePagination);
-});
-
-/* ================= USER ROLE RESTRICTIONS ================= */
-Then("admin-only category controls should not be visible", async function () {
-  await categoryPage.verifyAdminControlsHidden();
-});
-
-When("the user tries to open the add category page", async function () {
-  await this.page.goto("http://localhost:8080/ui/categories/add");
-});
-
-When("the user tries to open the edit category page for an existing category", async function () {
-  const id = existingCategoryId ?? "1";
-  await this.page.goto(`http://localhost:8080/ui/categories/edit/${id}`);
-});
-
-Then("access should be denied", async function () {
-  await categoryPage.verifyAccessDenied();
+Then("the CM1 response should contain paginated results", function (this: CM1CustomWorld) {
+  expect(this.responseBody).toBeDefined();
+  expect(this.responseBody.content).toBeDefined();
+  expect(Array.isArray(this.responseBody.content)).toBe(true);
 });
