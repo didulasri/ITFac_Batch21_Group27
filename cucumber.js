@@ -16,6 +16,7 @@ module.exports = {
   categories: {
     require: [
       "src/test/utils/hooks.ts",
+      "src/test/steps/common.steps.ts",
       "src/test/steps/categories_cm1.steps.ts",
     ],
     requireModule: ["ts-node/register"],
@@ -48,6 +49,8 @@ module.exports = {
   categories_cm2: {
     require: [
       "src/test/utils/hooks.ts",
+      "src/test/steps/common.steps.ts",
+      "src/test/steps/categories_cm1.steps.ts",
       "src/test/steps/categories_cm2.steps.ts",
     ],
     requireModule: ["ts-node/register"],

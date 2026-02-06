@@ -1,58 +1,28 @@
-import { Given, When, Then } from "@cucumber/cucumber";
+import { When, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { CategoryPage } from "../pages/CategoryPage";
 
+// Lazy-init: shared login steps (in categories_cm1.steps.ts) don't set this module's
+// categoryPage, so we create it on first use from the World's page object.
 let categoryPage: CategoryPage;
+
+function cp(world: any): CategoryPage {
+  if (!categoryPage || categoryPage["page"] !== world.page) {
+    categoryPage = new CategoryPage(world.page);
+  }
+  return categoryPage;
+}
 
 // store created name per scenario
 let createdCategoryName = "";
 
-// ---------- LOGIN ----------
-Given("the user is logged in as Admin", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', { state: "visible" });
-  await this.page.fill('input[name="username"]', "admin");
-  await this.page.fill('input[name="password"]', "admin123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Categories");
-  categoryPage = new CategoryPage(this.page);
-
-  console.log("✓ Admin login complete");
-});
-
-Given("the user is logged in as User", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', { state: "visible" });
-  await this.page.fill('input[name="username"]', "testuser");
-  await this.page.fill('input[name="password"]', "test123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForLoadState("networkidle"); // Wait for navigation to complete
-  await this.page.waitForSelector("text=Categories");
-  categoryPage = new CategoryPage(this.page);
-
-  console.log("✓ User login complete");
-});
-
-// ---------- NAVIGATION ----------
-When("the admin opens the categories page", async function () {
-  await categoryPage.openCategoryListing();
-});
-
-When("the user opens the categories page", async function () {
-  await categoryPage.openCategoryListing();
-});
-
 // ---------- CM2 UI 01 ----------
 When("the admin clicks Add Category", async function () {
-  await categoryPage.clickAddCategory();
+  await cp(this).clickAddCategory();
 });
 
 Then("the Add Category page should be opened", async function () {
-  await categoryPage.verifyAddPageOpened();
+  await cp(this).verifyAddPageOpened();
 });
 
 // ---------- CM2 UI 02 ----------
@@ -62,16 +32,16 @@ When(
     // Use dynamic name with prefix and truncated timestamp for length constraint
     createdCategoryName = `Cat${Date.now().toString().slice(-4)}`;
 
-    await categoryPage.fillCategoryName(createdCategoryName);
-    await categoryPage.selectParentEmpty();
-    await categoryPage.clickSave();
+    await cp(this).fillCategoryName(createdCategoryName);
+    await cp(this).selectParentEmpty();
+    await cp(this).clickSave();
   }
 );
 
 Then("the categories page should show the created category", async function () {
-  await categoryPage.verifyOnCategoriesList();
-  await categoryPage.searchCategory(createdCategoryName);
-  await categoryPage.verifyListContains(createdCategoryName);
+  await cp(this).verifyOnCategoriesList();
+  await cp(this).searchCategory(createdCategoryName);
+  await cp(this).verifyListContains(createdCategoryName);
 });
 
 // ---------- CM2 UI 03 ----------
@@ -81,78 +51,62 @@ When(
     // Use dynamic name with prefix and truncated timestamp for length constraint
     createdCategoryName = `Sub${Date.now().toString().slice(-4)}`;
 
-    await categoryPage.fillCategoryName(createdCategoryName);
-    await categoryPage.selectParentByLabel(parentLabel);
-    await categoryPage.clickSave();
+    await cp(this).fillCategoryName(createdCategoryName);
+    await cp(this).selectParentByLabel(parentLabel);
+    await cp(this).clickSave();
   }
 );
 
 // ---------- CM2 UI 04 ----------
 When("the admin tries to save category with empty name", async function () {
-  await categoryPage.fillCategoryName("");
-  await categoryPage.clickSave();
+  await cp(this).fillCategoryName("");
+  await cp(this).clickSave();
 });
 
 Then("the Category Name required validation should be shown", async function () {
-  await categoryPage.verifyNameRequiredError();
+  await cp(this).verifyNameRequiredError();
 });
 
 // ---------- CM2 UI 05 ----------
 When("the admin enters an invalid name length and tries to save", async function () {
   // too short
-  await categoryPage.fillCategoryName("AA");
-  await categoryPage.clickSave();
-  await categoryPage.verifyNameLengthError();
+  await cp(this).fillCategoryName("AA");
+  await cp(this).clickSave();
+  await cp(this).verifyNameLengthError();
 
   // too long
-  await categoryPage.fillCategoryName("ABCDEFGHIJK"); // 11 chars
-  await categoryPage.clickSave();
-  await categoryPage.verifyNameLengthError();
+  await cp(this).fillCategoryName("ABCDEFGHIJK"); // 11 chars
+  await cp(this).clickSave();
+  await cp(this).verifyNameLengthError();
 });
 
 Then("the Category Name length validation should be shown", async function () {
-  await categoryPage.verifyNameLengthError();
+  await cp(this).verifyNameLengthError();
 });
 
 When(/^the admin clicks Cancel on add\/edit page$/, async function () {
-  await categoryPage.clickCancel();
+  await cp(this).clickCancel();
 });
 
 Then("the user should be redirected back to categories page", async function () {
-  await categoryPage.verifyOnCategoriesList();
+  await cp(this).verifyOnCategoriesList();
 });
 
 // ---------- CM2 UI 06 ----------
 Then("Add Category button should be hidden for user", async function () {
-  await categoryPage.verifyAddHiddenForUser();
+  await cp(this).verifyAddHiddenForUser();
 });
 
 // ---------- CM2 UI 07 ----------
 Then("Edit and Delete actions should be hidden or disabled for user", async function () {
-  await categoryPage.verifyUserEditDeleteHiddenOrDisabled();
-});
-
-// ---------- CM2 UI 08 ----------
-When("the user tries to open the add category page", async function () {
-  await categoryPage.openAddCategoryDirect();
-});
-
-// ---------- CM2 UI 09 ----------
-When("the user tries to open the edit category page for an existing category", async function () {
-  const id = await categoryPage.getFirstCategoryIdFromListOrFallback();
-  await categoryPage.openEditCategoryDirect(id);
-});
-
-// shared (expected) assertion: denied
-Then("access should be denied", async function () {
-  await categoryPage.verifyAccessDenied();
+  await cp(this).verifyUserEditDeleteHiddenOrDisabled();
 });
 
 // ---------- CM2 UI 10 ----------
 When("the user attempts to delete a category by request", async function () {
   // Get any id to attempt delete
-  const id = await categoryPage.getFirstCategoryIdFromListOrFallback();
-  const status = await categoryPage.attemptDeleteViaFetch(id);
+  const id = await cp(this).getFirstCategoryIdFromListOrFallback();
+  const status = await cp(this).attemptDeleteViaFetch(id);
   (this as any).lastDeleteStatus = status;
 });
 
