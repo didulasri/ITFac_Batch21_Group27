@@ -1,4 +1,4 @@
-@api
+@api @categories2-api
 Feature: Category Management - API Test Cases (CM2)
 
   Background:

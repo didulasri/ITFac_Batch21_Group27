@@ -1,3 +1,4 @@
+@ui @categories2-ui
 Feature: Category Management UI - Member 2 (CM2) Scenarios
 
   @CM2-UI-01
@@ -43,12 +44,14 @@ Feature: Category Management UI - Member 2 (CM2) Scenarios
 
   @CM2-UI-06
   Scenario: User: Add Category not visible
+    Given standard test categories exist
     Given the user is logged in as User
     When the user opens the categories page
     Then Add Category button should be hidden for user
 
   @CM2-UI-07
   Scenario: User: Edit/Delete actions hidden or disabled
+    Given standard test categories exist
     Given the user is logged in as User
     When the user opens the categories page
     Then Edit and Delete actions should be hidden or disabled for user
