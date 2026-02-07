@@ -1,10 +1,6 @@
 module.exports = {
   default: {
-    require: [
-      "src/test/hooks/pm2-seed.hooks.ts",
-      "src/test/utils/hooks.ts",
-      "src/test/steps/**/*.ts",
-    ],
+    require: ["src/test/utils/hooks.ts", "src/test/steps/**/*.ts"],
     requireModule: ["ts-node/register"],
     format: ["progress", "allure-cucumberjs/reporter"],
     formatOptions: {
