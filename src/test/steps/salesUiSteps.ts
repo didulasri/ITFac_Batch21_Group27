@@ -1,54 +1,24 @@
 import { Given, When, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
 import { SalesPage } from "../pages/SalesPage";
-import { ApiHelper } from "../utils/api-helper";
-import { AuthHelper } from "../utils/auth-helper";
 
-let loginPage: LoginPage;
 let salesPage: SalesPage;
 
-Given("the Sales Admin is logged in", async function () {
-  loginPage = new LoginPage(this.page);
-  await loginPage.loginAsAdmin();
-});
-
-Given("the Sales User is logged in", async function () {
-  loginPage = new LoginPage(this.page);
-  await loginPage.loginAsUser();
-});
-
 Given("a plant exists for sales", async function () {
-  await setupPlantHierarchy(this);
+  if (!this.dataSeeder) {
+    throw new Error("DataSeeder not initialized");
+  }
+  const data = await this.dataSeeder.createPlant();
+  this.testPlantId = data.plantId;
+  this.plantName = data.plantName;
 });
 
 Given("a sale exists in the system for UI", async function () {
-  if (!this.testPlantId) {
-    await setupPlantHierarchy(this);
+  if (!this.dataSeeder) {
+    throw new Error("DataSeeder not initialized");
   }
 
-  const originalToken = this.apiHelper.getAuthToken();
-  const adminToken = await this.authHelper.loginAdmin();
-  this.apiHelper.setAuthToken(adminToken);
-
-  try {
-    const saleResponse = await this.apiHelper.post(
-      `/api/sales/plant/${this.testPlantId}?quantity=1`,
-      {},
-    );
-    if (saleResponse.status() !== 201) {
-      const error = await this.apiHelper.getResponseBody(saleResponse);
-      console.error("❌ Failed to create test sale:", JSON.stringify(error));
-      throw new Error(
-        `Failed to create test sale. Status: ${saleResponse.status()}`,
-      );
-    }
-    const sale = await this.apiHelper.getResponseBody(saleResponse);
-    this.testSaleId = sale.id;
-    console.log(`✓ Created test sale with ID: ${this.testSaleId}`);
-  } finally {
-    if (originalToken) this.apiHelper.setAuthToken(originalToken);
-  }
+  await this.dataSeeder.createSale(this.testPlantId);
 });
 
 When("the admin navigates to the Sales page", async function () {
@@ -124,7 +94,6 @@ When("the admin cancels deletion in Sales", async function () {
   });
 
   await salesPage.deleteButtons.first().click();
-  await this.page.waitForTimeout(500);
 });
 
 Then("the sale should remain in the list in Sales", async function () {
@@ -183,76 +152,3 @@ Then(
     expect(date1.getTime()).toBeGreaterThanOrEqual(date2.getTime());
   },
 );
-
-When(
-  "the user tries to access {string} directly",
-  async function (url: string) {
-    await this.page.goto(`http://localhost:8080${url}`);
-  },
-);
-
-Then("access should be denied with 403 or redirect", async function () {
-  const text = await this.page.textContent("body");
-  const restricted =
-    text?.includes("Access Denied") ||
-    text?.includes("403") ||
-    text?.includes("Forbidden");
-  expect(restricted).toBeTruthy();
-});
-
-async function setupPlantHierarchy(world: any) {
-  if (!world.apiHelper) {
-    console.error("ApiHelper not found on world instance!");
-    return;
-  }
-
-  const originalToken = world.apiHelper.getAuthToken();
-  const adminToken = await world.authHelper.loginAdmin();
-  world.apiHelper.setAuthToken(adminToken);
-
-  try {
-    const mainCatResponse = await world.apiHelper.post("/api/categories", {
-      name: `M${Date.now().toString().slice(-6)}`,
-    });
-    if (mainCatResponse.status() !== 201) {
-      const err = await world.apiHelper.getResponseBody(mainCatResponse);
-      throw new Error(`Main Category creation failed: ${JSON.stringify(err)}`);
-    }
-    const mainCat = await world.apiHelper.getResponseBody(mainCatResponse);
-    world.testMainCategoryId = mainCat.id;
-
-    const subCatResponse = await world.apiHelper.post("/api/categories", {
-      name: `S${Date.now().toString().slice(-6)}`,
-      parent: { id: world.testMainCategoryId },
-    });
-    if (subCatResponse.status() !== 201) {
-      const err = await world.apiHelper.getResponseBody(subCatResponse);
-      throw new Error(`Sub Category creation failed: ${JSON.stringify(err)}`);
-    }
-    const subCat = await world.apiHelper.getResponseBody(subCatResponse);
-    world.testSubCategoryId = subCat.id;
-
-    const plantName = `P${Date.now().toString().slice(-6)}`;
-    const plantResponse = await world.apiHelper.post(
-      `/api/plants/category/${world.testSubCategoryId}`,
-      {
-        name: plantName,
-        price: 25.99,
-        quantity: 100,
-      },
-    );
-    if (plantResponse.status() !== 201) {
-      const err = await world.apiHelper.getResponseBody(plantResponse);
-      throw new Error(`Plant creation failed: ${JSON.stringify(err)}`);
-    }
-    const plant = await world.apiHelper.getResponseBody(plantResponse);
-
-    world.testPlantId = plant.id;
-    world.plantName = plant.name;
-    console.log(
-      `✓ Robust data setup complete. Plant ID: ${world.testPlantId}, Name: ${world.plantName}`,
-    );
-  } finally {
-    if (originalToken) world.apiHelper.setAuthToken(originalToken);
-  }
-}

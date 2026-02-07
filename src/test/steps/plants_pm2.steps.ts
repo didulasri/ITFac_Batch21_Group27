@@ -2,51 +2,13 @@ import { Given, When, Then, DataTable } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { PlantPage } from "../pages/PlantPage";
 
-// Helper to get the appropriate requester (apiRequest for API tests, page.request for UI tests)
 function getRequester(context: any) {
   return context.apiRequest || context.page.request;
 }
 
-/* ================= UI LOGIN STEPS ================= */
-
-Given("the admin user is logged in", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', {
-    state: "visible",
-  });
-  await this.page.fill('input[name="username"]', "admin");
-
-  await this.page.fill('input[name="password"]', "admin123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Plants");
-
-  console.log("✓ Admin user login complete");
-});
-
-Given("the standard user is logged in", async function () {
-  await this.page.goto("http://localhost:8080/ui/login");
-
-  await this.page.waitForSelector('input[name="username"]', {
-    state: "visible",
-  });
-  await this.page.fill('input[name="username"]', "testuser");
-
-  await this.page.fill('input[name="password"]', "test123");
-  await this.page.click('button[type="submit"]');
-
-  await this.page.waitForSelector("text=Plants");
-
-  console.log("✓ Standard user login complete");
-});
-
-/* ================= API AUTH STEPS ================= */
-
 Given(
   "the user is authenticated as Admin with a valid access token",
   async function () {
-    // Use apiRequest if available (API-only tests), otherwise use page.request (UI tests)
     const requester = this.apiRequest || this.page.request;
 
     const response = await requester.post(
@@ -59,14 +21,12 @@ Given(
       },
     );
 
-    // 1. Check if login request failed (Important!)
     if (!response.ok()) {
       throw new Error(`Admin Login Failed! Status: ${response.status()}`);
     }
 
     const data = await response.json();
 
-    // 2. Check if token actually exists in response
     if (!data.token) {
       throw new Error("Login successful but no token returned!");
     }
@@ -84,7 +44,6 @@ Given(
     // Use apiRequest if available (API-only tests), otherwise use page.request (UI tests)
     const requester = this.apiRequest || this.page.request;
 
-    // Get user token via API
     const response = await requester.post(
       "http://localhost:8080/api/auth/login",
       {
@@ -100,24 +59,26 @@ Given(
   },
 );
 
-/* ================= PRECONDITION STEPS ================= */
-
 Given("there is at least one plant record in the system", async function () {
-  // Skip if we're doing API tests (adminToken exists but we haven't navigated)
-  if (this.adminToken || this.userToken) {
-    console.log("✓ Plant records will be used for API tests");
-    return;
+  if (!this.dataSeeder) {
+    if (this.apiRequest) {
+      const { DataSeeder } = require("../utils/DataSeeder");
+      this.dataSeeder = new DataSeeder(
+        this.apiRequest,
+        "http://localhost:8080",
+      );
+    }
   }
-  // For UI tests, verify plants exist
-  try {
-    await this.page.waitForSelector("tbody tr", { timeout: 5000 });
-    console.log("✓ Plant records verified in system");
-  } catch {
-    console.log("✓ Proceeding with test");
+
+  if (this.dataSeeder) {
+    await this.dataSeeder.createPlant();
+    console.log("✓ Plant record ensured via DataSeeder");
+  } else {
+    console.log(
+      "⚠ DataSeeder not available, skipping creation (might rely on existing data)",
+    );
   }
 });
-
-/* ================= PLANT PAGE STEPS - PM2 SPECIFIC ================= */
 
 When("the admin clicks the Add Plant button", async function () {
   await this.page.click('a[href*="add"], button:has-text("Add Plant")');
@@ -136,20 +97,17 @@ When("the admin clicks the Delete button for a plant", async function () {
 });
 
 When("the admin confirms the deletion", async function () {
-  // Look for confirmation dialog or confirm button
   try {
     await this.page.click(
       'button:has-text("Confirm"), button:has-text("Yes"), button:has-text("Delete")',
     );
   } catch {
-    // If dialog doesn't have visible text, force click the last visible button
     const buttons = await this.page.locator("button:visible");
     const count = await buttons.count();
     if (count > 0) {
       await buttons.last().click({ force: true, timeout: 5000 });
     }
   }
-  await this.page.waitForTimeout(1000); // Wait for deletion to process
 });
 
 When("the admin clicks the Save button", async function () {
@@ -163,7 +121,6 @@ When("the admin clicks the Update button", async function () {
       timeout: 10000,
     });
   } catch {
-    // Try alternative selectors
     await this.page
       .locator("button")
       .filter({ hasText: /^Update$/ })
@@ -175,17 +132,29 @@ When("the admin enters plant details:", async function (dataTable: DataTable) {
   const data = dataTable.rowsHash();
 
   if (data.name) {
-    await this.page.fill('input[name="name"]', data.name);
+    const uniqueName = data.name + " " + Date.now();
+    await this.page.fill('input[name="name"]', uniqueName);
+    this.createdPlantName = uniqueName; // Store for verification
   }
   if (data.category) {
-    // Try multiple selectors for category dropdown
+    let categoryToSelect = data.category;
+
+    if (data.category === "{string}" || data.category === "Flowers") {
+      const { DataSeeder } = require("../utils/DataSeeder");
+      const requester = this.apiRequest || this.page.request;
+      const dataSeeder = new DataSeeder(requester, "http://localhost:8080");
+
+      const cats = await dataSeeder.createCategoryHierarchy();
+      categoryToSelect = cats.subCategoryName;
+    }
+
     try {
       await this.page.selectOption('select[name="categoryId"]', {
-        label: data.category,
+        label: categoryToSelect,
       });
     } catch {
       await this.page.selectOption("select#categoryId", {
-        label: data.category,
+        label: categoryToSelect,
       });
     }
   }
@@ -211,7 +180,6 @@ When(
 );
 
 When("the admin leaves all required fields empty", async function () {
-  // Simply don't fill any fields - they'll remain empty
   console.log("✓ Required fields left empty");
 });
 
@@ -239,12 +207,8 @@ When("the user views the plant list", async function () {
 });
 
 When("the user selects a plant from the list", async function () {
-  // Click on the first plant row or view details button
   await this.page.click("tbody tr:first-child");
-  await this.page.waitForTimeout(500);
 });
-
-/* ================= UI ASSERTION STEPS ================= */
 
 Then(
   "the plant {string} should be created successfully and appear in the plant list",
@@ -253,12 +217,14 @@ Then(
       const plantPage = new PlantPage(this.page);
       await plantPage.verifyPlantsDisplayed();
 
-      // Verify the plant name appears in the list
+      const nameToVerify = this.createdPlantName || plantName;
+      console.log(`Verifying plant: ${nameToVerify}`);
+
       const plantFound = await this.page.textContent(
-        `tbody tr:has-text("${plantName}")`,
+        `tbody tr:has-text("${nameToVerify}")`,
       );
       expect(plantFound).toBeTruthy();
-      console.log(`✓ Plant "${plantName}" created and visible in list`);
+      console.log(`✓ Plant "${nameToVerify}" created and visible in list`);
     } catch (error) {
       console.error(`✗ Plant verification failed: ${error}`);
       throw error;
@@ -269,13 +235,11 @@ Then(
 Then(
   "validation messages should be displayed for all required fields",
   async function () {
-    // Check if form was rejected by checking we're still on same page
     const url = this.page.url();
     if (url.includes("/add") || url.includes("/edit")) {
       console.log("✓ Form submission was prevented (validation occurred)");
       expect(true).toBe(true);
     } else {
-      // Form was submitted, so validation may have failed silently
       console.log("✓ Form submission handled");
       expect(true).toBe(true);
     }
@@ -285,13 +249,11 @@ Then(
 Then(
   "the updated plant details should be saved successfully",
   async function () {
-    // Wait for success message or redirect
     await this.page
       .waitForSelector("text=Updated successfully, text=Success, text=Saved", {
         timeout: 5000,
       })
       .catch(() => {
-        // If no success message, check that we're back on the list page
         console.log("✓ Updated successfully (no explicit message)");
       });
   },
@@ -300,7 +262,6 @@ Then(
 Then(
   "the selected plant should be deleted successfully and removed from the list",
   async function () {
-    // Wait for success message
     await this.page
       .waitForSelector(
         "text=Deleted successfully, text=Success, text=Removed",
@@ -310,7 +271,6 @@ Then(
         console.log("✓ Deleted successfully (no explicit message)");
       });
 
-    // Verify the plant is no longer in the list
     const plantPage = new PlantPage(this.page);
     await plantPage.verifyPlantsDisplayed();
   },
@@ -319,13 +279,11 @@ Then(
 Then(
   "the system should prevent saving and display validation error for negative quantity",
   async function () {
-    // Check if form is still on same page (validation prevented submission)
     const url = this.page.url();
     if (url.includes("/add") || url.includes("/edit")) {
       console.log("✓ Negative quantity validation prevented form submission");
       expect(true).toBe(true);
     } else {
-      // If page changed, validation may have been bypassed
       console.log("✓ Form submission handled");
       expect(true).toBe(true);
     }
@@ -372,15 +330,12 @@ Then("the Delete option should not be visible to the user", async function () {
 Then(
   "the selected plant details should be displayed correctly",
   async function () {
-    // Verify that plant details are accessible - check if rows exist and have content
     const rows = await this.page.locator("tbody tr");
     const rowCount = await rows.count();
     expect(rowCount).toBeGreaterThan(0);
     console.log(`✓ Plant details displayed (${rowCount} rows found)`);
   },
 );
-
-/* ================= API REQUEST STEPS ================= */
 
 When(
   "the admin sends a POST request to {string} with valid plant data:",
@@ -390,7 +345,6 @@ When(
     // Use apiRequest if available (API-only tests), otherwise use page.request (UI tests)
     const requester = this.apiRequest || this.page.request;
 
-    // 1. Get Category ID (Your code is doing this correctly now, as logs show '5')
     const categoryResponse = await requester.get(
       "http://localhost:8080/api/categories",
       {
@@ -400,8 +354,6 @@ When(
     const categories = await categoryResponse.json();
     console.log(`Categories response: ${JSON.stringify(categories)}`);
 
-    // Find the matching category (can be main category or subcategory)
-    // The API returns categories with parentName field
     let matchedCategory = categories.find((c: any) => c.name === data.category);
 
     if (!matchedCategory) {
@@ -413,7 +365,6 @@ When(
       `✓ Found category: ${matchedCategory.name} (ID: ${matchedCategory.id}, ParentName: ${matchedCategory.parentName})`,
     );
 
-    // 2. GENERATE UNIQUE NAME to prevent 500 Errors
     const uniqueName = `${data.name} ${Date.now()}`;
 
     const plantData = {
@@ -427,7 +378,7 @@ When(
         parent:
           matchedCategory.parentName && matchedCategory.parentName !== "-"
             ? {
-                id: 0, // We'll need to get the parent ID from categories if needed
+                id: 0,
                 name: matchedCategory.parentName,
                 parent: null,
               }
@@ -436,7 +387,6 @@ When(
       },
     };
 
-    // Replace {categoryId} with actual ID
     const actualEndpoint = endpoint.replace(
       "{categoryId}",
       matchedCategory.id.toString(),
@@ -466,7 +416,6 @@ When(
       categoryId: categoryId,
       price: 25.99,
       quantity: 50,
-      // name is intentionally missing
     };
 
     this.apiResponse = await requester.post(
@@ -491,7 +440,6 @@ When(
 
     const requester = getRequester(this);
 
-    // 1. Get existing plant
     const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
@@ -505,19 +453,15 @@ When(
       throw new Error("No plants found to update!");
     }
 
-    // 2. PREPARE THE PAYLOAD (Fixing the structure)
-    // We must convert the nested 'category' object back into a simple 'categoryId'
     const payload = {
       name: data.name,
       price: parseFloat(data.price),
       quantity: existingPlant.quantity,
-      // Check if category is an object and extract ID, otherwise use it directly
       categoryId: existingPlant.category?.id || existingPlant.categoryId,
     };
 
     const realEndpoint = endpoint.replace("{id}", existingPlant.id);
 
-    // 3. Send Request
     this.apiResponse = await requester.put(
       `http://localhost:8080${realEndpoint}`,
       {
@@ -582,8 +526,6 @@ When(
   },
 );
 
-/* ================= USER API REQUEST STEPS ================= */
-
 When(
   "the user sends a POST request to {string} with plant data",
   async function (endpoint: string) {
@@ -615,9 +557,7 @@ When(
   "the user sends a PUT request to {string} with updated data",
   async function (endpoint: string) {
     const requester = getRequester(this);
-    // 1. GET ALL PLANTS to find a valid one (Dynamic ID)
-    // Note: We use the User Token here, assuming Users can at least READ the list.
-    // If Users can't read, you might need to use adminToken just to get the ID.
+
     const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
@@ -625,7 +565,6 @@ When(
       },
     );
 
-    // Check if user can view list, otherwise fail gracefully or use admin token
     if (!listResponse.ok()) {
       console.log(
         "User cannot view list, defaulting to ID 1 (expecting 403 anyway)",
@@ -635,16 +574,13 @@ When(
       const plants = await listResponse.json();
       if (plants.length > 0) {
         this.plantId = plants[0].id;
-        this.existingPlant = plants[0]; // Save for payload construction
+        this.existingPlant = plants[0];
       }
     }
 
     const plantId = this.plantId || 1;
     const url = endpoint.replace("{id}", plantId.toString());
 
-    // 2. Construct VALID Payload
-    // Even though we expect failure, we must send valid data to avoid 400 Bad Request
-    // safely handle cases where existingPlant might be undefined
     const payload = {
       name: "Updated Plant",
       price: 50.99,
@@ -686,7 +622,7 @@ When(
   "the user sends a GET request to {string}",
   async function (endpoint: string) {
     const requester = getRequester(this);
-    // 1. Fetch the list of plants to find a valid ID
+
     const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
@@ -694,7 +630,6 @@ When(
       },
     );
 
-    // Check if the list request worked
     if (!listResponse.ok()) {
       throw new Error(
         `Could not fetch plant list to find an ID. Status: ${listResponse.status()}`,
@@ -703,16 +638,13 @@ When(
 
     const plants = await listResponse.json();
 
-    // Safety check
     if (plants.length === 0) {
       throw new Error("No plants exist in the database!");
     }
 
-    // 2. Use the FIRST REAL ID found in the database
     const validId = plants[0].id;
     const url = endpoint.replace("{id}", validId.toString());
 
-    // 3. Send the specific GET request
     this.apiResponse = await requester.get(`http://localhost:8080${url}`, {
       headers: {
         Authorization: `Bearer ${this.userToken}`,
@@ -727,7 +659,7 @@ When(
   "the user sends a PUT request to {string} with updated quantity",
   async function (endpoint: string) {
     const requester = getRequester(this);
-    // 1. GET ALL PLANTS to find a valid one (Dynamic ID)
+
     const listResponse = await requester.get(
       "http://localhost:8080/api/plants",
       {
@@ -735,9 +667,6 @@ When(
       },
     );
 
-    // Check if user can view list to find an ID
-    // If user has no read access, we can't find an ID dynamically without using admin token
-    // But assuming user can READ but not WRITE:
     if (!listResponse.ok()) {
       console.log(
         "User cannot view list. Cannot find valid ID. Defaulting to 1.",
@@ -746,21 +675,18 @@ When(
     } else {
       const plants = await listResponse.json();
       if (plants.length > 0) {
-        this.plantId = plants[0].id; // Use real ID (e.g., 5)
-        this.existingPlant = plants[0]; // Save data for payload
+        this.plantId = plants[0].id;
+        this.existingPlant = plants[0];
       }
     }
 
     const plantId = this.plantId || 1;
     const url = endpoint.replace("{id}", plantId.toString());
 
-    // 2. Construct VALID Payload (Merge existing data with new quantity)
-    // We send a FULL valid object so the server doesn't reject it as "Bad Request" (400)
-    // We want it to reject it as "Forbidden" (403)
     const payload = {
       name: this.existingPlant ? this.existingPlant.name : "Valid Name",
       price: this.existingPlant ? this.existingPlant.price : 10.99,
-      quantity: 100, // <--- The change we are trying to make
+      quantity: 100,
       categoryId:
         this.existingPlant?.category?.id || this.existingPlant?.categoryId || 1,
     };
@@ -779,15 +705,12 @@ When(
   },
 );
 
-/* ================= API ASSERTION STEPS ================= */
-
 Then(
   "the API should return HTTP 201 and the plant should be created successfully",
   async function () {
     const status = this.apiResponse.status();
     console.log(`API Response Status: ${status}`);
 
-    // Log error details if not successful
     if (![200, 201].includes(status)) {
       try {
         const errorBody = await this.apiResponse.json();

@@ -30,13 +30,13 @@ Feature: Sales Management - API Test Cases
   @SM-API-004
   Scenario: 404 Plant Not Found
     Given admin is authenticated with a valid token
-    When admin sends POST request to create sale for plant 9999 with quantity 1
+    When admin sends POST request to create sale for plant "{nonExistentPlantId}" with quantity 1
     Then the response status code should be 404
 
   @SM-API-005
   Scenario: 404 Sale Not Found
     Given admin is authenticated with a valid token
-    When admin sends DELETE request to "/api/sales/9999"
+    When admin sends DELETE request to "/api/sales/{nonExistentSaleId}"
     Then the response status code should be 404
 
   @SM-API-006

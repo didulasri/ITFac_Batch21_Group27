@@ -17,7 +17,7 @@ let seedingDone = false;
  */
 Before(
   {
-    tags: "@PM1 or @PM2 or @PM1-API or @PM1-UI or @PM2-API or @PM2-UI",
+    tags: "@PM1 or @PM2 or @PM1-API or @PM1-UI or @PM2-API or @PM2-UI or @plants2-ui",
     timeout: 120000,
   },
   async function (scenario) {

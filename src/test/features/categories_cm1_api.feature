@@ -1,4 +1,4 @@
-@api
+@api @categories1-api
 Feature: Category Management - API Test Cases (CM1)
 
   Background:

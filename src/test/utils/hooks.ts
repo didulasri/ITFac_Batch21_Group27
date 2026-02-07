@@ -14,6 +14,7 @@ import {
 } from "@playwright/test";
 import { ApiHelper } from "./api-helper";
 import { AuthHelper } from "./auth-helper";
+import { DataSeeder } from "./DataSeeder";
 
 setDefaultTimeout(60000);
 
@@ -32,6 +33,8 @@ class CustomWorld {
   userRole?: string;
   apiHelper?: any;
   authHelper?: any;
+  dataSeeder?: DataSeeder;
+  seededData?: any;
 }
 
 setWorldConstructor(CustomWorld);
@@ -66,8 +69,8 @@ Before({ tags: "@ui" }, async function () {
   console.log("=== Starting browser for UI test ===");
 
   this.browser = await chromium.launch({
-    headless: false,
-    slowMo: 500,
+    headless: true,
+    slowMo: 50,
   });
 
   this.context = await this.browser.newContext();
@@ -82,8 +85,9 @@ Before({ tags: "@ui" }, async function () {
   });
   this.apiHelper = new ApiHelper(this.apiRequest, "http://localhost:8080");
   this.authHelper = new AuthHelper(this.apiRequest, "http://localhost:8080");
+  this.dataSeeder = new DataSeeder(this.apiRequest, "http://localhost:8080");
 
-  console.log("=== Browser & API Helpers ready ===");
+  console.log("=== Browser & Helpers ready ===");
 });
 
 After({ tags: "@ui" }, async function (scenario) {
@@ -99,6 +103,8 @@ After({ tags: "@ui" }, async function (scenario) {
   if (this.context) await this.context.close();
   if (this.browser) await this.browser.close();
 
+  if (this.apiRequest) await this.apiRequest.dispose();
+
   console.log("=== Browser closed ===");
 });
 
@@ -106,8 +112,8 @@ Before({ tags: "not @api and not @ui" }, async function () {
   console.log("=== Starting browser (default) ===");
 
   this.browser = await chromium.launch({
-    headless: false,
-    slowMo: 500,
+    headless: true,
+    slowMo: 50,
   });
 
   this.context = await this.browser.newContext();

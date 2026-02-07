@@ -192,8 +192,13 @@ When(
 );
 
 When(
-  "admin sends POST request to create sale for plant {int} with quantity {int}",
-  async function (plantId: number, quantity: number) {
+  "admin sends POST request to create sale for plant {string} with quantity {int}",
+  async function (plantIdStr: string, quantity: number) {
+    let plantId = plantIdStr;
+    if (plantIdStr === "{nonExistentPlantId}") {
+      plantId = "999999";
+    }
+
     console.log(`→ POST /api/sales/plant/${plantId}?quantity=${quantity}`);
     this.apiResponse = await this.apiHelper.post(
       `/api/sales/plant/${plantId}?quantity=${quantity}`,
@@ -218,8 +223,13 @@ When("admin sends DELETE request to delete the sale", async function () {
 When(
   "admin sends DELETE request to {string}",
   async function (endpoint: string) {
-    console.log(`→ DELETE ${endpoint}`);
-    this.apiResponse = await this.apiHelper.delete(endpoint);
+    let resolved = endpoint;
+    if (resolved.includes("{nonExistentSaleId}")) {
+      resolved = resolved.replace("{nonExistentSaleId}", "999999");
+    }
+
+    console.log(`→ DELETE ${resolved}`);
+    this.apiResponse = await this.apiHelper.delete(resolved);
     try {
       this.responseBody = await this.apiHelper.getResponseBody(
         this.apiResponse,

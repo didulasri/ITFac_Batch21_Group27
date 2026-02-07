@@ -153,7 +153,127 @@ Tests are organized using Cucumber tags:
 
 ## Test Scenarios
 
-### Sales Management UI Tests (10 scenarios)
+### Category Management UI (CM1 - Listing & Search)
+
+| ID         | Scenario                                          | Level | Status     |
+| ---------- | ------------------------------------------------- | ----- | ---------- |
+| CM1-UI-001 | Admin views category listing                      | UI    | ✅ Passing |
+| CM1-UI-002 | Admin searches categories by name                 | UI    | ✅ Passing |
+| CM1-UI-003 | Admin filters categories by parent category       | UI    | ✅ Passing |
+| CM1-UI-004 | Admin sorts categories by ID, Name and Parent     | UI    | ✅ Passing |
+| CM1-UI-005 | Admin paginates category listing                  | UI    | ✅ Passing |
+| CM1-UI-006 | User views category listing (read-only)           | UI    | ✅ Passing |
+| CM1-UI-007 | User searches categories by name                  | UI    | ✅ Passing |
+| CM1-UI-008 | User filters categories by parent category        | UI    | ✅ Passing |
+| CM1-UI-009 | User cannot see admin controls on categories page | UI    | ✅ Passing |
+| CM1-UI-010 | User is blocked from admin-only category pages    | UI    | ✅ Passing |
+
+### Category Management UI (CM2 - CRUD)
+
+| ID         | Scenario                                                 | Level | Status     |
+| ---------- | -------------------------------------------------------- | ----- | ---------- |
+| CM2-UI-001 | Admin: Open Add Category page                            | UI    | ✅ Passing |
+| CM2-UI-002 | Admin: Create main category (no parent)                  | UI    | ✅ Passing |
+| CM2-UI-003 | Admin: Create sub-category with parent selected          | UI    | ✅ Passing |
+| CM2-UI-004 | Admin: Validation - Category name required               | UI    | ✅ Passing |
+| CM2-UI-005 | Admin: Validation - name length 3-10 + Cancel navigation | UI    | ✅ Passing |
+| CM2-UI-006 | User: Add Category not visible                           | UI    | ✅ Passing |
+| CM2-UI-007 | User: Edit/Delete actions hidden or disabled             | UI    | ✅ Passing |
+| CM2-UI-008 | User: Direct access to Add page blocked                  | UI    | ✅ Passing |
+| CM2-UI-009 | User: Direct access to Edit page blocked                 | UI    | ✅ Passing |
+| CM2-UI-010 | User: Attempting delete via request is blocked           | UI    | ✅ Passing |
+
+### Category Management API (CM1 - Listing & Search)
+
+| ID         | Scenario                                    | Level | Method | Status     |
+| ---------- | ------------------------------------------- | ----- | ------ | ---------- |
+| CM1-API-01 | Admin: GET categories page default          | API   | GET    | ✅ Passing |
+| CM1-API-02 | Admin: GET categories page search by name   | API   | GET    | ✅ Passing |
+| CM1-API-03 | Admin: GET categories page filter by parent | API   | GET    | ✅ Passing |
+| CM1-API-04 | Admin: GET category by id success           | API   | GET    | ✅ Passing |
+| CM1-API-05 | Admin: Pagination endpoint rejects invalid  | API   | GET    | ✅ Passing |
+| CM1-API-06 | User: GET categories allowed                | API   | GET    | ✅ Passing |
+| CM1-API-07 | User: GET categories page allowed           | API   | GET    | ✅ Passing |
+| CM1-API-08 | User: GET category by id allowed            | API   | GET    | ✅ Passing |
+| CM1-API-09 | User: GET summary allowed                   | API   | GET    | ✅ Passing |
+| CM1-API-10 | User: GET sub-categories allowed            | API   | GET    | ✅ Passing |
+
+### Category Management API (CM2 - CRUD)
+
+| ID         | Scenario                                    | Level | Method | Status     |
+| ---------- | ------------------------------------------- | ----- | ------ | ---------- |
+| CM2-API-01 | Admin: POST create main category success    | API   | POST   | ✅ Passing |
+| CM2-API-02 | Admin: POST create sub-category success     | API   | POST   | ✅ Passing |
+| CM2-API-03 | Admin: POST validation - missing/blank name | API   | POST   | ✅ Passing |
+| CM2-API-04 | Admin: PUT update category success          | API   | PUT    | ✅ Passing |
+| CM2-API-05 | Admin: DELETE category success + verify     | API   | DELETE | ✅ Passing |
+| CM2-API-06 | User: POST create category forbidden        | API   | POST   | ✅ Passing |
+| CM2-API-07 | User: PUT update category forbidden         | API   | PUT    | ✅ Passing |
+| CM2-API-08 | User: DELETE category forbidden             | API   | DELETE | ✅ Passing |
+| CM2-API-09 | Unauthorized: POST create returns 401       | API   | POST   | ✅ Passing |
+| CM2-API-10 | Unauthorized: PUT update returns 401        | API   | PUT    | ✅ Passing |
+
+### Plant Management UI (PM1 - Listing & Search)
+
+| ID         | Scenario                                   | Level | Status     |
+| ---------- | ------------------------------------------ | ----- | ---------- |
+| PM1-UI-001 | Admin views plant listing                  | UI    | ✅ Passing |
+| PM1-UI-002 | Admin searches plants by name              | UI    | ✅ Passing |
+| PM1-UI-003 | Admin filters plants by category           | UI    | ✅ Passing |
+| PM1-UI-004 | Admin views low stock plants               | UI    | ✅ Passing |
+| PM1-UI-005 | Admin can see action buttons on plant list | UI    | ✅ Passing |
+| PM1-UI-006 | User views plant listing                   | UI    | ✅ Passing |
+| PM1-UI-007 | User searches plants by name               | UI    | ✅ Passing |
+| PM1-UI-008 | User filters plants by category            | UI    | ✅ Passing |
+| PM1-UI-009 | User views low stock indicator             | UI    | ✅ Passing |
+| PM1-UI-010 | User cannot access admin controls          | UI    | ✅ Passing |
+
+### Plant Management UI (PM2 - CRUD)
+
+| ID         | Scenario                                           | Level | Status     |
+| ---------- | -------------------------------------------------- | ----- | ---------- |
+| PM2-UI-001 | Admin Create a new plant with valid data           | UI    | ✅ Passing |
+| PM2-UI-002 | Admin Validate required fields when creating plant | UI    | ✅ Passing |
+| PM2-UI-003 | Admin Update existing plant details                | UI    | ✅ Passing |
+| PM2-UI-004 | Admin Delete a plant                               | UI    | ✅ Passing |
+| PM2-UI-005 | Admin Prevent negative quantity input              | UI    | ✅ Passing |
+| PM2-UI-006 | User View plant list                               | UI    | ✅ Passing |
+| PM2-UI-007 | User Verify Add Plant button is hidden             | UI    | ✅ Passing |
+| PM2-UI-008 | User Verify Edit option is disabled                | UI    | ✅ Passing |
+| PM2-UI-009 | User Verify Delete option is hidden                | UI    | ✅ Passing |
+| PM2-UI-010 | User View plant details                            | UI    | ✅ Passing |
+
+### Plant Management API (PM1 - Listing & Search)
+
+| ID         | Scenario                                    | Level | Method | Status     |
+| ---------- | ------------------------------------------- | ----- | ------ | ---------- |
+| PM1-API-01 | Admin: List all plants                      | API   | GET    | ✅ Passing |
+| PM1-API-02 | Admin: Search plant by name                 | API   | GET    | ✅ Passing |
+| PM1-API-03 | Admin: Filter plants by category            | API   | GET    | ✅ Passing |
+| PM1-API-04 | Admin: View low stock plants                | API   | GET    | ✅ Passing |
+| PM1-API-05 | Admin: View plants using pagination/sorting | API   | GET    | ✅ Passing |
+| PM1-API-06 | User: List all plants                       | API   | GET    | ✅ Passing |
+| PM1-API-07 | User: Search plant                          | API   | GET    | ✅ Passing |
+| PM1-API-08 | User: Filter plants by category             | API   | GET    | ✅ Passing |
+| PM1-API-09 | User: View plant summary                    | API   | GET    | ✅ Passing |
+| PM1-API-10 | User: Restrict stock modification           | API   | PUT    | ✅ Passing |
+
+### Plant Management API (PM2 - CRUD)
+
+| ID         | Scenario                                      | Level | Method | Status     |
+| ---------- | --------------------------------------------- | ----- | ------ | ---------- |
+| PM2-API-01 | Admin Create new plant with valid data        | API   | POST   | ✅ Passing |
+| PM2-API-02 | Admin Validate plant creation, missing fields | API   | POST   | ✅ Passing |
+| PM2-API-03 | Admin Update existing plant                   | API   | PUT    | ✅ Passing |
+| PM2-API-04 | Admin Delete a plant                          | API   | DELETE | ✅ Passing |
+| PM2-API-05 | Admin Prevent negative stock value            | API   | POST   | ✅ Passing |
+| PM2-API-06 | User Prevent plant creation by user           | API   | POST   | ✅ Passing |
+| PM2-API-07 | User Prevent plant update by user             | API   | PUT    | ✅ Passing |
+| PM2-API-08 | User Prevent plant deletion by user           | API   | DELETE | ✅ Passing |
+| PM2-API-09 | User View plant details                       | API   | GET    | ✅ Passing |
+| PM2-API-10 | User Prevent invalid update attempt           | API   | PUT    | ✅ Passing |
+
+### Sales Management UI (10 scenarios)
 
 | ID        | Scenario                      | Status     |
 | --------- | ----------------------------- | ---------- |
@@ -168,7 +288,7 @@ Tests are organized using Cucumber tags:
 | SM-UI-009 | Default Sorting               | ✅ Passing |
 | SM-UI-010 | Direct Access Blocked         | ✅ Passing |
 
-### Sales Management API Tests (10 scenarios)
+### Sales Management API (10 scenarios)
 
 | ID         | Scenario                        | Method | Status     | Note                           |
 | ---------- | ------------------------------- | ------ | ---------- | ------------------------------ |

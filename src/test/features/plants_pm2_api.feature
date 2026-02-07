@@ -1,6 +1,4 @@
-@PM2-API
-@api
-@PM2
+@api @plants2-api
 
 Feature: Plant Management PM2 - CRUD Operations and Valiations
 

@@ -1,9 +1,29 @@
 import { When, Then } from "@cucumber/cucumber";
 import { PlantPage } from "../pages/PlantPage";
 
-// Login steps are in common.steps.ts (shared across all modules)
+import { DataSeeder } from "../utils/DataSeeder";
 
-/* ================= OPEN PAGE ================= */
+When("standard test plants exist", async function () {
+  const requester = this.apiRequest || this.page.request;
+  const dataSeeder = new DataSeeder(requester, "http://localhost:8080");
+
+  console.log("🌱 Seeding dynamic test data...");
+
+  const cats = await dataSeeder.createCategoryHierarchy();
+
+  const plant = await dataSeeder.createPlant(cats.subCategoryId.toString());
+
+  this.seededData = {
+    mainCategoryName: cats.mainCategoryName,
+    subCategoryName: cats.subCategoryName,
+    plantName: plant.plantName,
+    plantId: plant.plantId,
+  };
+
+  console.log(
+    `✓ Seeded for test: Plant="${plant.plantName}", Category="${cats.mainCategoryName}" -> "${cats.subCategoryName}"`,
+  );
+});
 
 When("the admin opens the plants page", async function () {
   const plantPage = new PlantPage(this.page);
@@ -20,14 +40,10 @@ When("admin opens plants page", async function () {
   await plantPage.openPlantListing();
 });
 
-/* ================= COMMON ASSERTION ================= */
-
 Then("the list of plants should be displayed", async function () {
   const plantPage = new PlantPage(this.page);
   await plantPage.verifyPlantsDisplayed();
 });
-
-/* ================= SEARCH ================= */
 
 When(
   "the admin searches for plant {string}",
@@ -37,6 +53,12 @@ When(
   },
 );
 
+When("the admin searches for the seeded plant", async function () {
+  const plantName = this.seededData.plantName;
+  const plantPage = new PlantPage(this.page);
+  await plantPage.searchPlant(plantName);
+});
+
 When(
   "the user searches for plant {string}",
   async function (plantName: string) {
@@ -44,6 +66,12 @@ When(
     await plantPage.searchPlant(plantName);
   },
 );
+
+When("the user searches for the seeded plant", async function () {
+  const plantName = this.seededData.plantName;
+  const plantPage = new PlantPage(this.page);
+  await plantPage.searchPlant(plantName);
+});
 
 Then(
   "only plants matching {string} should be displayed",
@@ -53,7 +81,14 @@ Then(
   },
 );
 
-/* ================= FILTER ================= */
+Then(
+  "only plants matching the seeded plant name should be displayed",
+  async function () {
+    const text = this.seededData.plantName;
+    const plantPage = new PlantPage(this.page);
+    await plantPage.verifySearchResultsContain(text);
+  },
+);
 
 When(
   "the admin filters plants by category {string}",
@@ -63,6 +98,13 @@ When(
   },
 );
 
+When("the admin filters plants by the seeded category", async function () {
+  const category = this.seededData.subCategoryName;
+  const plantPage = new PlantPage(this.page);
+
+  await plantPage.filterByCategory(category);
+});
+
 When(
   "the user filters plants by category {string}",
   async function (category: string) {
@@ -70,6 +112,12 @@ When(
     await plantPage.filterByCategory(category);
   },
 );
+
+When("the user filters plants by the seeded category", async function () {
+  const category = this.seededData.subCategoryName;
+  const plantPage = new PlantPage(this.page);
+  await plantPage.filterByCategory(category);
+});
 
 Then(
   "only plants under category {string} should be displayed",
@@ -79,7 +127,14 @@ Then(
   },
 );
 
-/* ================= LOW STOCK ================= */
+Then(
+  "only plants under the seeded category should be displayed",
+  async function () {
+    const category = this.seededData.subCategoryName;
+    const plantPage = new PlantPage(this.page);
+    await plantPage.verifyCategoryResults(category);
+  },
+);
 
 When("the admin views the plant listing", async function () {
   const plantPage = new PlantPage(this.page);
@@ -96,8 +151,6 @@ Then("low stock plants should be clearly indicated", async function () {
   await plantPage.verifyLowStockVisible();
 });
 
-/* ================= SORT ================= */
-
 When("the admin sorts plants by name", async function () {
   const plantPage = new PlantPage(this.page);
   await plantPage.sortByName();
@@ -107,8 +160,6 @@ Then("plants should be displayed in alphabetical order", async function () {
   const plantPage = new PlantPage(this.page);
   await plantPage.verifySortedAlphabetically();
 });
-
-/* ================= ADMIN CONTROLS ================= */
 
 Then("admin action buttons should be visible", async function () {
   const plantPage = new PlantPage(this.page);
