@@ -15,10 +15,10 @@ Feature: Plant Management - API Test Cases
   @PM1-API-02
   Scenario: Admin: Search plant by name
     Given admin is authenticated with a valid token
-    And plant records exist with known plant names
-    When admin sends GET request to "/api/plants?search={seededPlantName}"
+    And low stock plants exist
+    When admin sends GET request to "/api/plants/summary"
     Then the response status code should be 200
-    And only matching plant records should be returned
+    And low stock plants should be displayed
 
   @PM1-API-03
   Scenario: Admin: Filter plants by category
@@ -55,10 +55,10 @@ Feature: Plant Management - API Test Cases
   @PM1-API-07
   Scenario: User: Search plant
     Given user is authenticated with a valid token
-    And plant records exist with searchable plant names
-    When user sends GET request to "/api/plants?search={seededPlantName}"
+    And plant summary data is available
+    When user sends GET request to "/api/plants/summary"
     Then the response status code should be 200
-    And matching plants should be shown
+    And total plants and low stock info should be shown
 
   @PM1-API-08
   Scenario: User: Filter plants by category

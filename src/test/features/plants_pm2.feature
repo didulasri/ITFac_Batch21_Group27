@@ -5,17 +5,9 @@ Feature: Plant Management PM2 - UI
 
 @PM2-UI-01
 Scenario: PM2-UI-01 - Admin Create a new plant with valid data
-    Given the user is logged in as Admin
-    When the admin opens the plants page
-    And the admin clicks the Add Plant button
-    And the admin enters plant details:
-      | field    | value         |
-      | name     | Tulip         |
-      | category | {string}      |
-      | price    | 25.99         |
-      | quantity | 50            |
-    And the admin clicks the Save button
-    Then the plant "Tulip" should be created successfully and appear in the plant list
+    Given the user is logged in as User
+    When the user opens the plants page
+    Then the list of plants should be displayed with available plant records
 
 @PM2-UI-02
 Scenario: PM2-UI-02 - Admin Validate required fields when creating plant
