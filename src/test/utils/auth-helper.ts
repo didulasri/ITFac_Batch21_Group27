@@ -21,7 +21,7 @@ export class AuthHelper {
         if (response.ok()) {
             const body = await response.json();
             const token = body.token || body.accessToken || body.jwt;
-            console.log(`✓ Admin logged in successfully`);
+            console.log(`Admin logged in successfully`);
             return token;
         } else {
             throw new Error(`Admin login failed: ${response.status()}`);
@@ -40,7 +40,7 @@ export class AuthHelper {
         if (response.ok()) {
             const body = await response.json();
             const token = body.token || body.accessToken || body.jwt;
-            console.log(`✓ User logged in successfully`);
+            console.log(`User logged in successfully`);
             return token;
         } else {
             throw new Error(`User login failed: ${response.status()}`);

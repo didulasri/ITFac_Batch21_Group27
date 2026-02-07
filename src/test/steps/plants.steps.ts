@@ -7,7 +7,7 @@ When("standard test plants exist", async function () {
   const requester = this.apiRequest || this.page.request;
   const dataSeeder = new DataSeeder(requester, "http://localhost:8080");
 
-  console.log("🌱 Seeding dynamic test data...");
+  console.log("Seeding dynamic test data...");
 
   const cats = await dataSeeder.createCategoryHierarchy();
 
@@ -21,7 +21,7 @@ When("standard test plants exist", async function () {
   };
 
   console.log(
-    `✓ Seeded for test: Plant="${plant.plantName}", Category="${cats.mainCategoryName}" -> "${cats.subCategoryName}"`,
+    `Seeded for test: Plant="${plant.plantName}", Category="${cats.mainCategoryName}" -> "${cats.subCategoryName}"`,
   );
 });
 

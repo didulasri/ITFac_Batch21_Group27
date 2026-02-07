@@ -14,7 +14,7 @@ Given("the user is logged in as Admin", async function () {
   await this.page.click('button[type="submit"]');
 
   await this.page.waitForLoadState("networkidle");
-  console.log("✓ Admin login complete");
+  console.log("Admin login complete");
 });
 
 Given("the user is logged in as User", async function () {
@@ -28,7 +28,7 @@ Given("the user is logged in as User", async function () {
   await this.page.click('button[type="submit"]');
 
   await this.page.waitForLoadState("networkidle");
-  console.log("✓ User login complete");
+  console.log("User login complete");
 });
 
 When(
@@ -49,9 +49,9 @@ Then("access should be denied with 403 or redirect", async function () {
     content?.includes("Forbidden");
 
   if (isLoginRedirect) {
-    console.log("✓ Redirected to login page (Access Denied)");
+    console.log("Redirected to login page (Access Denied)");
   } else if (hasAccessDeniedText) {
-    console.log("✓ Access Denied message displayed");
+    console.log("Access Denied message displayed");
   } else {
     console.log(`Current URL: ${url}`);
   }

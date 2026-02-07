@@ -33,7 +33,7 @@ Given(
 
     this.adminToken = data.token;
     console.log(
-      `✓ Admin API token obtained: ${this.adminToken.substring(0, 10)}...`,
+      `Admin API token obtained: ${this.adminToken.substring(0, 10)}...`,
     );
   },
 );
@@ -55,7 +55,7 @@ Given(
     );
     const data = await response.json();
     this.userToken = data.token;
-    console.log("✓ User API token obtained");
+    console.log("User API token obtained");
   },
 );
 
@@ -72,7 +72,7 @@ Given("there is at least one plant record in the system", async function () {
 
   if (this.dataSeeder) {
     await this.dataSeeder.createPlant();
-    console.log("✓ Plant record ensured via DataSeeder");
+    console.log("Plant record ensured via DataSeeder");
   } else {
     console.log(
       "⚠ DataSeeder not available, skipping creation (might rely on existing data)",
@@ -165,7 +165,7 @@ When("the admin enters plant details:", async function (dataTable: DataTable) {
     await this.page.fill('input[name="quantity"]', data.quantity);
   }
 
-  console.log("✓ Plant details entered:", data);
+  console.log("Plant details entered:", data);
 });
 
 When("the admin enters plant name {string}", async function (name: string) {
@@ -180,7 +180,7 @@ When(
 );
 
 When("the admin leaves all required fields empty", async function () {
-  console.log("✓ Required fields left empty");
+  console.log("Required fields left empty");
 });
 
 When(
@@ -224,7 +224,7 @@ Then(
         `tbody tr:has-text("${nameToVerify}")`,
       );
       expect(plantFound).toBeTruthy();
-      console.log(`✓ Plant "${nameToVerify}" created and visible in list`);
+      console.log(`Plant "${nameToVerify}" created and visible in list`);
     } catch (error) {
       console.error(`✗ Plant verification failed: ${error}`);
       throw error;
@@ -237,10 +237,10 @@ Then(
   async function () {
     const url = this.page.url();
     if (url.includes("/add") || url.includes("/edit")) {
-      console.log("✓ Form submission was prevented (validation occurred)");
+      console.log("Form submission was prevented (validation occurred)");
       expect(true).toBe(true);
     } else {
-      console.log("✓ Form submission handled");
+      console.log("Form submission handled");
       expect(true).toBe(true);
     }
   },
@@ -254,7 +254,7 @@ Then(
         timeout: 5000,
       })
       .catch(() => {
-        console.log("✓ Updated successfully (no explicit message)");
+        console.log("Updated successfully (no explicit message)");
       });
   },
 );
@@ -268,7 +268,7 @@ Then(
         { timeout: 5000 },
       )
       .catch(() => {
-        console.log("✓ Deleted successfully (no explicit message)");
+        console.log("Deleted successfully (no explicit message)");
       });
 
     const plantPage = new PlantPage(this.page);
@@ -281,10 +281,10 @@ Then(
   async function () {
     const url = this.page.url();
     if (url.includes("/add") || url.includes("/edit")) {
-      console.log("✓ Negative quantity validation prevented form submission");
+      console.log("Negative quantity validation prevented form submission");
       expect(true).toBe(true);
     } else {
-      console.log("✓ Form submission handled");
+      console.log("Form submission handled");
       expect(true).toBe(true);
     }
   },
@@ -295,7 +295,7 @@ Then(
   async function () {
     const plantPage = new PlantPage(this.page);
     await plantPage.verifyPlantsDisplayed();
-    console.log("✓ Plant list displayed");
+    console.log("Plant list displayed");
   },
 );
 
@@ -307,7 +307,7 @@ Then(
     );
     const count = await addButton.count();
     expect(count).toBe(0);
-    console.log("✓ Add Plant button is hidden from user");
+    console.log("Add Plant button is hidden from user");
   },
 );
 
@@ -316,7 +316,7 @@ Then(
   async function () {
     const plantPage = new PlantPage(this.page);
     await plantPage.verifyAdminControlsHidden();
-    console.log("✓ Edit option is hidden from user");
+    console.log("Edit option is hidden from user");
   },
 );
 
@@ -324,7 +324,7 @@ Then("the Delete option should not be visible to the user", async function () {
   const deleteButtons = await this.page.locator('button[title="Delete"]');
   const count = await deleteButtons.count();
   expect(count).toBe(0);
-  console.log("✓ Delete option is hidden from user");
+  console.log("Delete option is hidden from user");
 });
 
 Then(
@@ -333,7 +333,7 @@ Then(
     const rows = await this.page.locator("tbody tr");
     const rowCount = await rows.count();
     expect(rowCount).toBeGreaterThan(0);
-    console.log(`✓ Plant details displayed (${rowCount} rows found)`);
+    console.log(`Plant details displayed (${rowCount} rows found)`);
   },
 );
 
@@ -362,7 +362,7 @@ When(
     }
 
     console.log(
-      `✓ Found category: ${matchedCategory.name} (ID: ${matchedCategory.id}, ParentName: ${matchedCategory.parentName})`,
+      `Found category: ${matchedCategory.name} (ID: ${matchedCategory.id}, ParentName: ${matchedCategory.parentName})`,
     );
 
     const uniqueName = `${data.name} ${Date.now()}`;
@@ -403,7 +403,7 @@ When(
       },
     );
 
-    console.log(`✓ POST request sent with Unique Name: '${uniqueName}'`);
+    console.log(`POST request sent with Unique Name: '${uniqueName}'`);
   },
 );
 
@@ -429,7 +429,7 @@ When(
       },
     );
 
-    console.log(`✓ POST request sent to ${endpoint} without plant name`);
+    console.log(`POST request sent to ${endpoint} without plant name`);
   },
 );
 
@@ -474,7 +474,7 @@ When(
     );
 
     console.log(
-      `✓ PUT request sent to ${realEndpoint} with CLEAN payload:`,
+      `PUT request sent to ${realEndpoint} with CLEAN payload:`,
       payload,
     );
   },
@@ -493,7 +493,7 @@ When(
       },
     });
 
-    console.log(`✓ DELETE request sent to ${url}`);
+    console.log(`DELETE request sent to ${url}`);
   },
 );
 
@@ -521,7 +521,7 @@ When(
     );
 
     console.log(
-      `✓ POST request sent to ${endpoint} with negative quantity: ${quantity}`,
+      `POST request sent to ${endpoint} with negative quantity: ${quantity}`,
     );
   },
 );
@@ -549,7 +549,7 @@ When(
       },
     );
 
-    console.log(`✓ User POST request sent to ${endpoint}`);
+    console.log(`User POST request sent to ${endpoint}`);
   },
 );
 
@@ -597,7 +597,7 @@ When(
       data: payload,
     });
 
-    console.log(`✓ User PUT request sent to ${url}`);
+    console.log(`User PUT request sent to ${url}`);
   },
 );
 
@@ -614,7 +614,7 @@ When(
       },
     });
 
-    console.log(`✓ User DELETE request sent to ${url}`);
+    console.log(`User DELETE request sent to ${url}`);
   },
 );
 
@@ -651,7 +651,7 @@ When(
       },
     });
 
-    console.log(`✓ User GET request sent to ${url}`);
+    console.log(`User GET request sent to ${url}`);
   },
 );
 
@@ -700,7 +700,7 @@ When(
     });
 
     console.log(
-      `✓ User PUT request sent to ${url} with valid payload structure`,
+      `User PUT request sent to ${url} with valid payload structure`,
     );
   },
 );
@@ -727,9 +727,9 @@ Then(
       if (responseData.id) {
         this.plantId = responseData.id;
       }
-      console.log(`✓ API returned HTTP ${status}, Plant created`);
+      console.log(`API returned HTTP ${status}, Plant created`);
     } catch {
-      console.log(`✓ API returned HTTP ${status}`);
+      console.log(`API returned HTTP ${status}`);
     }
   },
 );
@@ -743,9 +743,9 @@ Then(
 
     try {
       const responseData = await this.apiResponse.json();
-      console.log(`✓ API returned HTTP ${status} with error response`);
+      console.log(`API returned HTTP ${status} with error response`);
     } catch {
-      console.log(`✓ API returned HTTP ${status}`);
+      console.log(`API returned HTTP ${status}`);
     }
   },
 );
@@ -757,7 +757,7 @@ Then(
     if (![200, 204].includes(status)) {
       throw new Error(`Expected 200 or 204, got ${status}`);
     }
-    console.log(`✓ API returned HTTP ${status}, plant updated successfully`);
+    console.log(`API returned HTTP ${status}, plant updated successfully`);
   },
 );
 
@@ -766,7 +766,7 @@ Then(
   async function () {
     const status = this.apiResponse.status();
     expect([200, 204]).toContain(status);
-    console.log(`✓ API returned HTTP ${status}, plant deleted successfully`);
+    console.log(`API returned HTTP ${status}, plant deleted successfully`);
   },
 );
 
@@ -776,7 +776,7 @@ Then(
     const status = this.apiResponse.status();
     expect([400, 422, 500]).toContain(status);
     console.log(
-      `✓ API returned HTTP ${status} for negative quantity validation`,
+      `API returned HTTP ${status} for negative quantity validation`,
     );
   },
 );
@@ -787,7 +787,7 @@ Then(
     const status = this.apiResponse.status();
     // Accept 403 or 500 (API error)
     expect([403, 401, 500]).toContain(status);
-    console.log(`✓ API returned HTTP ${status} (Access Denied)`);
+    console.log(`API returned HTTP ${status} (Access Denied)`);
   },
 );
 
@@ -798,7 +798,7 @@ Then(
     if (![403, 401, 500].includes(status)) {
       throw new Error(`Expected 403, 401, or 500, got ${status}`);
     }
-    console.log(`✓ API returned HTTP ${status} (Update not allowed)`);
+    console.log(`API returned HTTP ${status} (Update not allowed)`);
   },
 );
 
@@ -807,7 +807,7 @@ Then(
   async function () {
     const status = this.apiResponse.status();
     expect([403, 401, 500]).toContain(status);
-    console.log(`✓ API returned HTTP ${status} (Delete forbidden)`);
+    console.log(`API returned HTTP ${status} (Delete forbidden)`);
   },
 );
 
@@ -818,7 +818,7 @@ Then(
     if (status !== 200) {
       throw new Error(`Expected 200, got ${status}`);
     }
-    console.log(`✓ API returned HTTP ${status}, plant data retrieved`);
+    console.log(`API returned HTTP ${status}, plant data retrieved`);
   },
 );
 
@@ -829,6 +829,6 @@ Then(
     if (![403, 401, 500].includes(status)) {
       throw new Error(`Expected 403, 401, or 500, got ${status}`);
     }
-    console.log(`✓ API returned HTTP ${status} (Update operation rejected)`);
+    console.log(`API returned HTTP ${status} (Update operation rejected)`);
   },
 );

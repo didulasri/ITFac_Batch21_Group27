@@ -30,7 +30,7 @@ Given("a sale exists in the system for API", async function () {
     }
     const sale = await this.apiHelper.getResponseBody(saleResponse);
     this.testSaleId = sale.id;
-    console.log(`✓ Created test sale with ID: ${this.testSaleId}`);
+    console.log(`Created test sale with ID: ${this.testSaleId}`);
   } finally {
     if (originalToken) this.apiHelper.setAuthToken(originalToken);
   }
@@ -107,7 +107,7 @@ Given("multiple sales exist in the system", async function () {
       }
     }
     console.log(
-      `✓ Created ${this.testSaleIds.length} test sales for pagination`,
+      `Created ${this.testSaleIds.length} test sales for pagination`,
     );
   } finally {
     if (originalToken) this.apiHelper.setAuthToken(originalToken);
@@ -164,7 +164,7 @@ async function setupPlantHierarchy(world: any) {
     }
 
     world.testPlantId = plant.id;
-    console.log(`✓ Robust data setup complete. Plant ID: ${world.testPlantId}`);
+    console.log(`Robust data setup complete. Plant ID: ${world.testPlantId}`);
   } finally {
     if (originalToken) world.apiHelper.setAuthToken(originalToken);
   }
@@ -288,7 +288,7 @@ Then("the sale should be created successfully", function () {
   expect(this.responseBody.plantId || this.responseBody.plant).toBeDefined();
 
   this.createdSaleId = this.responseBody.id;
-  console.log(`✓ Sale created successfully with ID: ${this.createdSaleId}`);
+  console.log(`Sale created successfully with ID: ${this.createdSaleId}`);
 });
 
 Then(
@@ -299,7 +299,7 @@ Then(
     expect(this.responseBody.message || this.responseBody.error).toContain(
       expectedMessage,
     );
-    console.log(`✓ Error message verified`);
+    console.log(`Error message verified`);
   },
 );
 
@@ -307,14 +307,14 @@ Then("the response should contain all sales", function () {
   console.log("→ Verifying sales list");
   expect(Array.isArray(this.responseBody)).toBeTruthy();
   expect(this.responseBody.length).toBeGreaterThan(0);
-  console.log(`✓ Response contains ${this.responseBody.length} sales`);
+  console.log(`Response contains ${this.responseBody.length} sales`);
 });
 
 Then("the response should contain the sale details", function () {
   console.log("→ Verifying sale details");
   expect(this.responseBody).toBeDefined();
   expect(this.responseBody.id).toBe(this.testSaleId);
-  console.log(`✓ Sale details verified for ID: ${this.testSaleId}`);
+  console.log(`Sale details verified for ID: ${this.testSaleId}`);
 });
 
 Then(
@@ -328,13 +328,13 @@ Then(
       expect(this.responseBody.content.length).toBeLessThanOrEqual(pageSize);
       expect(this.responseBody.size).toBe(pageSize);
       console.log(
-        `✓ Paginated response verified: ${this.responseBody.content.length} items on page, size=${pageSize}`,
+        `Paginated response verified: ${this.responseBody.content.length} items on page, size=${pageSize}`,
       );
     } else {
       expect(Array.isArray(this.responseBody)).toBeTruthy();
       expect(this.responseBody.length).toBeLessThanOrEqual(pageSize);
       console.log(
-        `✓ Paginated response verified: ${this.responseBody.length} items`,
+        `Paginated response verified: ${this.responseBody.length} items`,
       );
     }
   },

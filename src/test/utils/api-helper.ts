@@ -12,7 +12,7 @@ export class ApiHelper {
 
   setAuthToken(token: string) {
     this.authToken = token;
-    console.log(`✓ Auth token set: ${token.substring(0, 20)}...`);
+    console.log(`Auth token set: ${token.substring(0, 20)}...`);
   }
 
   getAuthToken() {

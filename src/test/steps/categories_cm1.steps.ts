@@ -36,7 +36,7 @@ When("standard test categories exist", async function () {
   }
 
   console.log(
-    `✓ Standard test categories seeded. Parent: ${this.seededData.parentCategoryName}, Sub: ${this.seededData.subCategoryName}`,
+    `Standard test categories seeded. Parent: ${this.seededData.parentCategoryName}, Sub: ${this.seededData.subCategoryName}`,
   );
 });
 

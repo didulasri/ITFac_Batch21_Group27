@@ -14,7 +14,7 @@ export class DataSeeder {
   }
 
   async createCategoryHierarchy(mainName?: string, subName?: string) {
-    console.log("🌱 Seeding Category Hierarchy...");
+    console.log("Seeding Category Hierarchy...");
     const adminToken = await this.authHelper.loginAdmin();
     this.apiHelper.setAuthToken(adminToken);
 
@@ -39,7 +39,7 @@ export class DataSeeder {
       const existing = catsList.find((c: any) => c.name === mainCatName);
       if (existing) {
         console.log(
-          `✓ Found existing Main Category: ${existing.name} (ID: ${existing.id})`,
+          `Found existing Main Category: ${existing.name} (ID: ${existing.id})`,
         );
         // We need to return this as mainCat
         // Refactor to use a variable for 'mainCat'
@@ -90,7 +90,7 @@ export class DataSeeder {
 
       if (existingSub) {
         console.log(
-          `✓ Found existing Sub Category: ${existingSub.name} (ID: ${existingSub.id})`,
+          `Found existing Sub Category: ${existingSub.name} (ID: ${existingSub.id})`,
         );
         var subCat = existingSub;
       } else {
@@ -112,7 +112,7 @@ export class DataSeeder {
     }
 
     console.log(
-      `✅ Seeded Categories: ${mainCat.name} (ID: ${mainCat.id}) -> ${subCat.name} (ID: ${subCat.id})`,
+      `Seeded Categories: ${mainCat.name} (ID: ${mainCat.id}) -> ${subCat.name} (ID: ${subCat.id})`,
     );
 
     return {
@@ -124,7 +124,7 @@ export class DataSeeder {
   }
 
   async createPlant(subCategoryId?: string, name?: string) {
-    console.log("🌱 Seeding Plant...");
+    console.log("Seeding Plant...");
 
     let targetSubCatId = subCategoryId;
 
@@ -156,7 +156,7 @@ export class DataSeeder {
         const existingPlant = plants.find((p: any) => p.name === plantName);
         if (existingPlant) {
           console.log(
-            `✓ Found existing Plant: ${existingPlant.name} (ID: ${existingPlant.id})`,
+            `Found existing Plant: ${existingPlant.name} (ID: ${existingPlant.id})`,
           );
           var plant = existingPlant;
         } else {
@@ -179,7 +179,7 @@ export class DataSeeder {
       var plant = await this.apiHelper.getResponseBody(plantResponse);
     }
 
-    console.log(`✅ Seeded Plant: ${plant.name} (ID: ${plant.id})`);
+    console.log(`Seeded Plant: ${plant.name} (ID: ${plant.id})`);
 
     return {
       plantId: plant.id,
@@ -189,7 +189,7 @@ export class DataSeeder {
   }
 
   async createSale(plantId?: string) {
-    console.log("🌱 Seeding Sale...");
+    console.log("Seeding Sale...");
 
     let targetPlantId = plantId;
 
@@ -211,7 +211,7 @@ export class DataSeeder {
     }
 
     const sale = await this.apiHelper.getResponseBody(saleResponse);
-    console.log(`✅ Seeded Sale ID: ${sale.id}`);
+    console.log(`Seeded Sale ID: ${sale.id}`);
 
     return {
       saleId: sale.id,
@@ -242,7 +242,7 @@ export class DataSeeder {
   ];
 
   async ensureBaselineDataSeeded() {
-    console.log("🌱 Ensuring baseline data is seeded...");
+    console.log("Ensuring baseline data is seeded...");
     const adminToken = await this.authHelper.loginAdmin();
     this.apiHelper.setAuthToken(adminToken);
 
@@ -269,7 +269,7 @@ export class DataSeeder {
       console.log("⚠ Baseline categories missing or incomplete, seeding...");
       await this.seedBaselineCategories(adminToken, catsList);
     } else {
-      console.log("✓ Baseline categories already present.");
+      console.log("Baseline categories already present.");
     }
 
     // 2. Check/Seed Plants
@@ -286,7 +286,7 @@ export class DataSeeder {
       console.log("⚠ Baseline plants missing, seeding...");
       await this.seedBaselinePlants(adminToken);
     } else {
-      console.log("✓ Baseline plants already present.");
+      console.log("Baseline plants already present.");
     }
   }
 

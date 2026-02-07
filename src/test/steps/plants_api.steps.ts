@@ -5,7 +5,7 @@ import { AuthHelper } from "../utils/auth-helper";
 import { APIResponse } from "@playwright/test";
 
 Given("at least one plant record exists", function () {
-  console.log("✓ Precondition: Plant records exist");
+  console.log("Precondition: Plant records exist");
 });
 
 import { DataSeeder } from "../utils/DataSeeder";
@@ -17,7 +17,7 @@ Given("plant records exist with known plant names", async function () {
   );
   const p = await ds.createPlant();
   this.seededPlantName = p.plantName;
-  console.log(`✓ Seeded plant for search: ${this.seededPlantName}`);
+  console.log(`Seeded plant for search: ${this.seededPlantName}`);
 });
 
 Given("at least one category with associated plants exists", async function () {
@@ -27,7 +27,7 @@ Given("at least one category with associated plants exists", async function () {
   );
   const p = await ds.createPlant();
   this.seededCategoryId = p.subCategoryId;
-  console.log(`✓ Seeded category for filter: ${this.seededCategoryId}`);
+  console.log(`Seeded category for filter: ${this.seededCategoryId}`);
 });
 
 Given("low stock plants exist", async function () {
@@ -43,7 +43,7 @@ Given("low stock plants exist", async function () {
     quantity: 5,
     categoryId: p.subCategoryId,
   });
-  console.log("✓ Seeded low stock plant");
+  console.log("Seeded low stock plant");
 });
 
 Given(
@@ -62,7 +62,7 @@ Given(
       quantity: 3,
       categoryId: p.subCategoryId,
     });
-    console.log("✓ Seeded varying stock plants");
+    console.log("Seeded varying stock plants");
   },
 );
 
@@ -72,7 +72,7 @@ Given("plant records exist in the system", async function () {
     this.apiBaseUrl || "http://localhost:8080",
   );
   await ds.createPlant();
-  console.log("✓ Confirmed plant records exist");
+  console.log("Confirmed plant records exist");
 });
 
 Given("plant records exist with searchable plant names", async function () {
@@ -82,7 +82,7 @@ Given("plant records exist with searchable plant names", async function () {
   );
   const p = await ds.createPlant();
   this.seededPlantName = p.plantName;
-  console.log(`✓ Seeded searchable plant: ${this.seededPlantName}`);
+  console.log(`Seeded searchable plant: ${this.seededPlantName}`);
 });
 
 Given("categories with associated plants exist", async function () {
@@ -92,7 +92,7 @@ Given("categories with associated plants exist", async function () {
   );
   const p = await ds.createPlant();
   this.seededCategoryId = p.subCategoryId;
-  console.log(`✓ Seeded category with plants: ${this.seededCategoryId}`);
+  console.log(`Seeded category with plants: ${this.seededCategoryId}`);
 });
 
 Given("plant summary data is available", async function () {
@@ -101,7 +101,7 @@ Given("plant summary data is available", async function () {
     this.apiBaseUrl || "http://localhost:8080",
   );
   await ds.createPlant();
-  console.log("✓ Confirmed summary data available");
+  console.log("Confirmed summary data available");
 });
 
 Given(
@@ -113,7 +113,7 @@ Given(
     );
     const p = await ds.createPlant();
     this.seededPlantId = p.plantId;
-    console.log(`✓ Seeded plant for restriction test: ${this.seededPlantId}`);
+    console.log(`Seeded plant for restriction test: ${this.seededPlantId}`);
   },
 );
 
@@ -143,7 +143,7 @@ Then("the response should contain list of all plants", function () {
   console.log("→ Verifying plant list in response");
   expect(Array.isArray(this.responseBody)).toBeTruthy();
   expect(this.responseBody.length).toBeGreaterThan(0);
-  console.log(`✓ Response contains ${this.responseBody.length} plants`);
+  console.log(`Response contains ${this.responseBody.length} plants`);
 });
 
 Then("only matching plant records should be returned", function () {
@@ -162,7 +162,7 @@ Then("only matching plant records should be returned", function () {
     }
   });
 
-  console.log(`✓ All ${this.responseBody.length} plants match search criteria`);
+  console.log(`All ${this.responseBody.length} plants match search criteria`);
 });
 
 Then("plants under selected category should be shown", function () {
@@ -172,7 +172,7 @@ Then("plants under selected category should be shown", function () {
   if (this.seededCategoryId) {
   }
   expect(this.responseBody.length).toBeGreaterThan(0);
-  console.log(`✓ ${this.responseBody.length} plants in selected category`);
+  console.log(`${this.responseBody.length} plants in selected category`);
 });
 
 Then("low stock plants should be displayed", function () {
@@ -182,7 +182,7 @@ Then("low stock plants should be displayed", function () {
     this.responseBody.lowStockCount !== undefined ||
       this.responseBody.lowStockPlants !== undefined,
   ).toBeTruthy();
-  console.log(`✓ Low stock information present in response`);
+  console.log(`Low stock information present in response`);
 });
 
 Then("plant list should be sorted by name in ascending order", function () {
@@ -195,14 +195,14 @@ Then("plant list should be sorted by name in ascending order", function () {
   const sortedNames = [...plantNames].sort();
   expect(plantNames).toEqual(sortedNames);
 
-  console.log(`✓ Plants are sorted by name in ascending order`);
+  console.log(`Plants are sorted by name in ascending order`);
 });
 
 Then("plant list should be returned", function () {
   console.log("→ Verifying plant list returned");
   expect(Array.isArray(this.responseBody)).toBeTruthy();
   expect(this.responseBody.length).toBeGreaterThan(0);
-  console.log(`✓ Plant list returned with ${this.responseBody.length} items`);
+  console.log(`Plant list returned with ${this.responseBody.length} items`);
 });
 
 Then("matching plants should be shown", function () {
@@ -221,14 +221,14 @@ Then("matching plants should be shown", function () {
     }
   });
 
-  console.log(`✓ ${this.responseBody.length} matching plants shown`);
+  console.log(`${this.responseBody.length} matching plants shown`);
 });
 
 Then("category-specific plants should be displayed", function () {
   console.log("→ Verifying category-specific plants");
   expect(Array.isArray(this.responseBody)).toBeTruthy();
   expect(this.responseBody.length).toBeGreaterThan(0);
-  console.log(`✓ Category-specific plants displayed`);
+  console.log(`Category-specific plants displayed`);
 });
 
 Then("total plants and low stock info should be shown", function () {
@@ -238,5 +238,5 @@ Then("total plants and low stock info should be shown", function () {
     this.responseBody.totalPlants !== undefined ||
       this.responseBody.total !== undefined,
   ).toBeTruthy();
-  console.log(`✓ Plant summary data present`);
+  console.log(`Plant summary data present`);
 });
