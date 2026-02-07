@@ -142,3 +142,40 @@ After({ tags: "not @api and not @ui" }, async function (scenario) {
 
   console.log("=== Browser closed ===");
 });
+
+/* ==================== DATA SEEDING HOOK ==================== */
+
+let baselineSeedingDone = false;
+
+Before(
+  {
+    tags: "@PM1 or @PM2 or @PM1-API or @PM1-UI or @PM2-API or @PM2-UI or @plants2-ui",
+    timeout: 120000,
+  },
+  async function (scenario) {
+    if (baselineSeedingDone) {
+      return;
+    }
+
+    console.log(
+      `=== Baseline Seed Hook: Preparing data for: ${scenario.pickle.name} ===`,
+    );
+
+    const apiRequest = await request.newContext({
+      baseURL: "http://localhost:8080",
+      extraHTTPHeaders: { "Content-Type": "application/json" },
+    });
+
+    try {
+      const dataSeeder = new DataSeeder(apiRequest, "http://localhost:8080");
+      await dataSeeder.ensureBaselineDataSeeded();
+      baselineSeedingDone = true;
+    } catch (error) {
+      console.error(`✗ Error in baseline seed hook: ${error}`);
+    } finally {
+      await apiRequest.dispose();
+    }
+
+    console.log("=== Baseline Seed Hook: Completed ===\n");
+  },
+);

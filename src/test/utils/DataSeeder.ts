@@ -218,4 +218,145 @@ export class DataSeeder {
       plantId: targetPlantId,
     };
   }
+
+  /* ==================== BASELINE SEEDING ==================== */
+
+  private static readonly SEED_CATEGORIES = [
+    { name: "Indoor", parent: null },
+    { name: "Outdoor", parent: null },
+    { name: "Flowers", parent: "Indoor" },
+    { name: "Succulents", parent: "Indoor" },
+    { name: "Shrubs", parent: "Outdoor" },
+    { name: "Herbs", parent: "Outdoor" },
+  ];
+
+  private static readonly SEED_PLANTS = [
+    { name: "Orchid", price: 800, quantity: 20, categoryName: "Flowers" },
+    { name: "Rose", price: 500, quantity: 60, categoryName: "Flowers" },
+    { name: "Hydrangea", price: 1000, quantity: 2, categoryName: "Shrubs" },
+    { name: "Rosemary", price: 1500, quantity: 6, categoryName: "Herbs" },
+    { name: "Thyme", price: 1300, quantity: 4, categoryName: "Herbs" },
+    { name: "Aloe Vera", price: 400, quantity: 26, categoryName: "Succulents" },
+    { name: "Daisy", price: 590, quantity: 12, categoryName: "Flowers" },
+    { name: "Azalea", price: 1600, quantity: 5, categoryName: "Shrubs" },
+  ];
+
+  async ensureBaselineDataSeeded() {
+    console.log("🌱 Ensuring baseline data is seeded...");
+    const adminToken = await this.authHelper.loginAdmin();
+    this.apiHelper.setAuthToken(adminToken);
+
+    // 1. Check/Seed Categories
+    const allCatsRes = await this.apiHelper.get("/api/categories?size=1000");
+    const categories = await this.apiHelper.getResponseBody(allCatsRes);
+    const catsList = Array.isArray(categories)
+      ? categories
+      : categories.content || [];
+
+    const subCategoryNames = ["Flowers", "Succulents", "Shrubs", "Herbs"];
+    const hasBaselineCategories = DataSeeder.SEED_CATEGORIES.every(
+      (seedCat) => {
+        const found = catsList.find((c: any) => c.name === seedCat.name);
+        if (!found) return false;
+        if (subCategoryNames.includes(seedCat.name)) {
+          return found.parentName && found.parentName !== "-";
+        }
+        return true;
+      },
+    );
+
+    if (!hasBaselineCategories) {
+      console.log("⚠ Baseline categories missing or incomplete, seeding...");
+      await this.seedBaselineCategories(adminToken, catsList);
+    } else {
+      console.log("✓ Baseline categories already present.");
+    }
+
+    // 2. Check/Seed Plants
+    const allPlantsRes = await this.apiHelper.get("/api/plants?size=1000");
+    const plants = await this.apiHelper.getResponseBody(allPlantsRes);
+    const plantsList = Array.isArray(plants) ? plants : plants.content || [];
+
+    const seedPlantNames = DataSeeder.SEED_PLANTS.map((p) => p.name);
+    const hasBaselinePlants = plantsList.some((p: any) =>
+      seedPlantNames.includes(p.name),
+    );
+
+    if (!hasBaselinePlants) {
+      console.log("⚠ Baseline plants missing, seeding...");
+      await this.seedBaselinePlants(adminToken);
+    } else {
+      console.log("✓ Baseline plants already present.");
+    }
+  }
+
+  private async seedBaselineCategories(token: string, existingCats: any[]) {
+    const subCategoryNames = ["Flowers", "Succulents", "Shrubs", "Herbs"];
+    for (const name of subCategoryNames) {
+      const invalid = existingCats.find(
+        (c: any) => c.name === name && (!c.parentName || c.parentName === "-"),
+      );
+      if (invalid) {
+        await this.apiHelper.delete(`/api/categories/${invalid.id}`);
+      }
+    }
+
+    const mainCategories = ["Indoor", "Outdoor"];
+    const createdIds: Record<string, string> = {};
+
+    for (const name of mainCategories) {
+      let cat = existingCats.find((c: any) => c.name === name);
+      if (!cat) {
+        const res = await this.apiHelper.post("/api/categories", { name });
+        cat = await this.apiHelper.getResponseBody(res);
+      }
+      createdIds[name] = cat.id;
+    }
+
+    const subCategories = [
+      { name: "Flowers", parent: "Indoor" },
+      { name: "Succulents", parent: "Indoor" },
+      { name: "Shrubs", parent: "Outdoor" },
+      { name: "Herbs", parent: "Outdoor" },
+    ];
+
+    for (const sub of subCategories) {
+      const exists = existingCats.find(
+        (c: any) => c.name === sub.name && c.parentName === sub.parent,
+      );
+      if (!exists) {
+        await this.apiHelper.post("/api/categories", {
+          name: sub.name,
+          parent: { id: createdIds[sub.parent] },
+        });
+      }
+    }
+  }
+
+  private async seedBaselinePlants(token: string) {
+    const allCatsRes = await this.apiHelper.get("/api/categories?size=1000");
+    const categories = await this.apiHelper.getResponseBody(allCatsRes);
+    const catsList = Array.isArray(categories)
+      ? categories
+      : categories.content || [];
+
+    for (const plant of DataSeeder.SEED_PLANTS) {
+      const category = catsList.find((c: any) => c.name === plant.categoryName);
+      if (category && category.parentName && category.parentName !== "-") {
+        await this.apiHelper.post(`/api/plants/category/${category.id}`, {
+          name: plant.name,
+          price: plant.price,
+          quantity: plant.quantity,
+          category: {
+            id: category.id,
+            name: category.name,
+            parent: {
+              id: catsList.find((c: any) => c.name === category.parentName).id,
+              name: category.parentName,
+            },
+          },
+        });
+      }
+    }
+  }
 }
